@@ -1,0 +1,5 @@
+[book]
+authors = ["Ja-Jet Loh"]
+language = "en"
+src = "src"
+title = "The QuokkaSim Book"
