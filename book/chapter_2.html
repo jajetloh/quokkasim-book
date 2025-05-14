@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>The QuokkaSim Book - The QuokkaSim Book</title>
+        <title>A Conceptual Overview - The QuokkaSim Book</title>
 
 
         <!-- Custom HTML head -->
@@ -155,53 +155,75 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="the-quokkasim-book"><a class="header" href="#the-quokkasim-book">The QuokkaSim Book</a></h1>
-<p>Welcome to the <strong>QuokkaSim Book</strong> – your guide to learning and mastering QuokkaSim, the Rust-based discrete-event simulation framework.</p>
-<blockquote>
-<p><strong>Note:</strong><br />
-QuokkaSim is under active development. If you find typos or missing features, let JJ know!</p>
-</blockquote>
+                        <h1 id="chapter-2-a-conceptual-overview"><a class="header" href="#chapter-2-a-conceptual-overview">Chapter 2: A Conceptual Overview</a></h1>
+<p>In Chapter 1 we ran some code for our first simulation, but now we'll try to cover the core concepts used for modelling in QuokkaSim, before we look again at the code to understand better what's happening.</p>
 <hr />
-<h2 id="what-is-quokkasim"><a class="header" href="#what-is-quokkasim">What is QuokkaSim?</a></h2>
-<p>QuokkaSim is a high-performance, event-driven simulation framework written in Rust, on top of the <a href="https://github.com/asynchronics/nexosim">NeXosim</a> simulation engine. It provides:</p>
+<h2 id="21-discrete-event-simulation-and-the-schedule"><a class="header" href="#21-discrete-event-simulation-and-the-schedule">2.1. Discrete Event Simulation and the Schedule</a></h2>
+<p>Simulations answer "what-if" questions, most commonly about what is the result of a set of initial conditions, rules, and controls.</p>
+<p>One approach is to approximate the continuous flow of time, by simulating the system at regular time-steps. This is a good regime for modelling continuous processes, such as:</p>
 <ul>
-<li>A type-safe <strong>Model</strong> and <strong>Context</strong> API</li>
-<li>Monotonic, reproducible <strong>time</strong> scheduling</li>
-<li>Pluggable <strong>event handlers</strong> and <strong>plugins</strong></li>
-<li>Zero-cost abstractions and minimal runtime overhead</li>
+<li>Movement of a pendulum under gravity,</li>
+<li>Temperature of a room over a day, or</li>
+<li>Stresses and fatigue in a beam under repeated loads</li>
 </ul>
-<p>Use QuokkaSim to build:</p>
-<ul>
-<li>Network simulators</li>
-<li>Discrete-event process models</li>
-<li>Queuing systems and more</li>
-</ul>
-<hr />
-<h2 id="who-should-read-this-book"><a class="header" href="#who-should-read-this-book">Who should read this book?</a></h2>
-<p>This book is written for:</p>
+<p>A time-stepped approach is good in these cases because</p>
 <ol>
-<li>You</li>
-<li>Some other people too</li>
+<li>There are well-defined equations for how quantities of interest change over time</li>
+<li>The length of the time-step can be adjusted based on how precise results need to be (and in fact, some approaches <a href="https://en.wikipedia.org/wiki/Adaptive_step_size">use an adaptive, changing time-step</a>)</li>
 </ol>
-<hr />
-<h2 id="faq"><a class="header" href="#faq">FAQ</a></h2>
-<p><strong>Why does QuokkaSim use Rust?</strong></p>
+<p>In each of the above situations, quantities of interest change continuously over time, so we need to re-calculate the state of the system often to ensure we're capturing any important changes.</p>
+<p>However, many systems don't deal with continuous quantities, or have important behaviour happening continuously over time, for example:</p>
 <ul>
-<li>Building QuokkaSim in Rust means:
+<li>Traffic flow through a traffic light,</li>
+<li>Preparing drinks at a cafe, or</li>
+<li>Car assembly at a factory</li>
+</ul>
+<p>In these situations, it can be very inefficient to update every component of the system at every timestep. A better approach here is to only update the system at the exact timesteps where something will happen! This is the approach taken in Discrete Even Simulation.</p>
+<p>In Discrete Event Simulation, an ordered schedule of events is maintained, and time jumps forward to the next event, which in turns can schedule more events.</p>
+<h2 id="22-resources-stocks-and-processes"><a class="header" href="#22-resources-stocks-and-processes">2.2. Resources, Stocks and Processes</a></h2>
+<p>TL;DR:</p>
 <ul>
-<li>QuokkaSim can be free and open source under the MIT License.</li>
-<li>QuokkaSim is highly performant (thanks to the <a href="https://github.com/asynchronics/nexosim">NeXosim</a> library).</li>
-<li>Simulations built in QuokkaSim can benefit from the type safety, memory safety, and explicit error handling that is fundamental to Rust. This strictness minimises issues that arise as a simulation model scales and increases in complexity.</li>
+<li>Resources are the quantities of stuff that we're interested in the movement of</li>
+<li>Stocks are entities which passively hold resources</li>
+<li>Processes are entities which actively move or transform resources, and can hold some resources as part of processing</li>
 </ul>
-</li>
-</ul>
+<div class="table-wrapper"><table><thead><tr><th>Example Use Case</th><th>Resource</th><th>Stocks</th><th>Processes</th></tr></thead><tbody>
+<tr><td>Water tanks connected by pipes</td><td>Litres of water</td><td>Tanks, resevoirs, pipes</td><td>Valves</td></tr>
+<tr><td>Trucking of Ore</td><td>Tonnes of ore</td><td>Stockpiles of ore</td><td>Trucks, conveyors, reclaiming equipment</td></tr>
+<tr><td>Customers in a Cafe</td><td>Customers</td><td>Queue for ordering, waiting area</td><td>Taking orders, serving drinks</td></tr>
+</tbody></table>
+</div>
+<h2 id="23-detailed-material-flow-customers-in-a-cafe"><a class="header" href="#23-detailed-material-flow-customers-in-a-cafe">2.3. Detailed Material Flow: Customers in a Cafe</a></h2>
+<p><strong>Time = Initial</strong></p>
+<p align="center"><img src="images/barista_1.svg" alt="Barista 1" /><p>
+We have a stock representing a queue of customers, which is processed by a barista who takes drink orders, before customers go into another queue to wait for their drink. The starting point of the simulation is shown in the diagram, with 3 people in line, and 1 person waiting for their drink.
+<p>Remember that Discrete Event Simulations rely on scheduled events triggering more events. There are no events at the start of the simulation, so we kick-start the simulation at the start by telling our Process to update its own state.</p>
+<p><strong>Time = 0:00</strong></p>
+<p align="center"><img src="images/barista_2.svg" alt="Barista 2" /><p>
+<p>The barista can only process a customer if a customer is in the queue, and if there is sufficient room in the waiting area (or perhaps just to not overwhelm the baristas who are making the drinks).</p>
+<p>So first, the process retrieves the current state of the upstream stock (Queued Customers) and downstream stock (Waiting for drinks). For now, stocks can have one of three states: Empty, Normal and Full.</p>
+<p>Queued customers is Full and Waiting for drinks is Normal. In this case, the barista can take an order, so the process seizes the front-most customer from the queue, and schedules a new event to occur in 30 seconds, when the ordering is complete.</p>
+<p><strong>Time = 0:30</strong></p>
+<p align="center"><img src="images/barista_3.svg" alt="Barista 3" /><p>
+<p>30 seconds later, the event triggers <em>Barista taking orders</em> is prompted to update itself again. This time, it first moves Customer B moves into the <em>Waiting for drinks</em> stock, before checking upstream and downstream states again. This time both states are <em>Normal</em>, in which case the process seizes the next customer and repeats.</p>
+<p align="center"><img src="images/barista_4.svg" alt="Barista 4" /><p>
+<p><strong>Time = 1:00</strong></p>
+<p align="center"><img src="images/barista_5.svg" alt="Barista 5" /><p>
+<p><em>Barista taking orders</em> is again triggered to update its state, and moves C into <em>Waiting for drinks</em>. This time the upstream and downstream states are <em>Normal</em> and <em>Full</em>. Because downstream is full, we do not process the next customer, and instead wait until we are triggered to update again.</p>
+<p><strong>Time = 1:15</strong></p>
+<p align="center"><img src="images/barista_6.svg" alt="Barista 6" /><p>
+<p><em>Waiting for drinks</em> has reduced from 3 people to 1 person, meaning its state has changed from <em>Full</em> to <em>Empty</em>. This change of state triggers any upstream or downstream processes to update, meaning that <em>Barista taking orders</em> is triggered to update.</p>
+<p><em>Barista taking orders</em> checks both upstream and downstream state again, finds both are <em>Normal</em>, so then begins processing D.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="chapter_1.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
 
-                            <a rel="next prefetch" href="chapter_1.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="chapter_3.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -211,8 +233,11 @@ QuokkaSim is under active development. If you find typos or missing features, le
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="chapter_1.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
 
-                    <a rel="next prefetch" href="chapter_1.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="chapter_3.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
