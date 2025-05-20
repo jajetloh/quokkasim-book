@@ -79,3 +79,46 @@ Queued customers is Full and Waiting for drinks is Normal. In this case, the bar
 *Waiting for drinks* has reduced from 3 people to 1 person, meaning its state has changed from *Full* to *Empty*. This change of state triggers any upstream or downstream processes to update, meaning that *Barista taking orders* is triggered to update.
 
 *Barista taking orders* checks both upstream and downstream state again, finds both are *Normal*, so then begins processing D.
+
+## 2.4. A Taxonomy of Processes
+
+In QuokkaSim, Processes are at the heart of all dynamic behaviours. We wish to make our processes as flexible as possible to allow us to test whatever we wish, but also to have as few different types of process, to minimise complexity and the mental burden of reasoning about them. With a small set of well-defined components, modellers who are new to QuokkaSim are able to pick up the framework quickly, and effectively translate real-world scenarios to a model representation.
+
+Note that we are not saying you have to follow this taxonomy or these concepts. You are free to create your own components suited to your use cases. If you have a case that isn't well suited to using our components, we'd like to hear about it! If such use cases are common, we will consider adding them as components in QuokkaSim directly.
+
+| Concept | # Inputs | # Outputs | Conserves resources? |
+|-|-|-|-|
+| Simple Process | 1 | 1 | ✅ Yes|
+| Source | 0 | 1 | ❌ Creates resources |
+| Sink | 1 | 0 | ❌ Destroys resources |
+| Combiner | N | 1 | ✅ Yes |
+| Splitter | 1 | N | ✅ Yes |
+
+### 2.4.1. Resource Conservation
+
+In most systems, there can be a natural sense of conservation, or of balance. For example:
+
+- In a transport simulation, a `Car { car_id: u32, make: String, model: String }` resource should not be created or destroyed in most processes. Cars are a conserved quantity in this context.
+- In a manufacturing simulation where we track the parts of a car through the manufacturing process via a vector of masses `ProtoCar { assembled_kg: f64, loose_tyres_kg: f64, loose_engine_kg: f64 }`, the total mass of parts through our system should be conserved, except where new parts are introduced into the system or the assembled car is removed from the system. However, the individual components like `loose_tyres_kg` are not conserved, and can be transformed into `assembled_kg` subject to the total mass being conserved.
+- In an ore crushing operation, where a crusher processes large rocks into smaller pieces, we may use a vector of masses `Ore { small: f64, medium: f64, large: f64 }`. The crusher may transform large pieces into small or medium pieces, but the total mass is conserved.
+
+By having most processes conserving resources, the key activities of resource and creation are separated out into their own proceses, which can be monitored with more scrutiny than other processes.
+
+
+### 2.4.2. Types of Combiners and Splitters
+
+Combiners and Splitters can be further classified by whether or not inputs/outputs are **AND-like (combinations)** or **XOR-like (choices)** - or a combination of both.
+
+What does this mean? Let's think through a couple of examples of combiners first.
+
+<p align="center"><img src="images/combiner_xor.svg" alt="XOR Combiner" /><p>
+
+Let's say you're a delivery driver. At your disposal is a number of cars, vans and trucks. Each distinct set of vehicle is a stock, but you can only choose to take from one of these stocks at this time. This is an **XOR-like** combiner process, as you must choose a car **or** a van **or** a truck - where **or** is an **exclusive or** (XOR).
+
+<p align="center"><img src="images/combiner_and.svg" alt="AND Combiner" /><p>
+
+On the other hand, let's say you are combining the ingredients for a cake - butter, sugar, eggs and flour. In this case, we want a combination of all four in a specific ratio, not an exclusive choice of one of them. In general we want a **combination** of some quantity of butter **and** sugar **and** eggs **and** flour (though in an edge case some quantities may be 0), thus this is a **AND-like** process.
+
+An example of a more general combiner which has both XOR and AND elements is the above cake batter example, but where you have to choose exclusively from different types of sugar like White Sugar, Brown Sugar and Honey.
+
+A similar breakdown can be made of Splitters. XOR-like splitters push material into one stock at a time. AND-like splitters generally push material into all downstream stocks at once. And a more general splitter can push into multiple, but have some exclusivity constraints.

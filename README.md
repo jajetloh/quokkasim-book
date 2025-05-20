@@ -1,0 +1,2 @@
+- ``docs`` to contain built files for hosting on GitHub Pages
+- Compile using ``mdbook build -d docs``

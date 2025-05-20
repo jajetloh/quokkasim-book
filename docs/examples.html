@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>A Basic Simulation Model - The QuokkaSim Book</title>
+        <title>Examples - The QuokkaSim Book</title>
 
 
         <!-- Custom HTML head -->
@@ -155,67 +155,53 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="chapter-3-a-basic-simulation-model"><a class="header" href="#chapter-3-a-basic-simulation-model">Chapter 3: A Basic Simulation Model</a></h1>
-<p>Now that we've understood the core concepts used by QuokkaSim, let's look at how we assemble a simple simulation model from scratch.</p>
-<hr />
-<h2 id="31-choose-your-data-structures"><a class="header" href="#31-choose-your-data-structures">3.1. Choose Your Data Structures</a></h2>
-<p>QuokkaSim supports the following Resource types out-of-the-box:</p>
-<ul>
-<li>
-<p><strong>Vectors (f64)</strong></p>
-<ul>
-<li>Use when your data can be represented as simple numeric quantities.</li>
-<li>Example: <code>VectorStock&lt;f64&gt;</code> tracks quantities like capacity, consumption, or other scalar values.</li>
-</ul>
-</li>
-<li>
-<p><strong>Vectors (Vector3)</strong></p>
-<ul>
-<li>Use when your simulation involves multi-dimensional data (for example, spatial coordinates or RGB color channels).</li>
-<li>Example: <code>VectorStock&lt;Vector3&gt;</code> is great for modeling 3D measurements.</li>
-</ul>
-</li>
-<li>
-<p><strong>Sequences (String)</strong></p>
-<ul>
-<li>Use for models where data is represented as sequences or lists of identifiers.</li>
-<li>Example: <code>SequenceStock&lt;String&gt;</code> is useful for handling events or discrete item identifiers.</li>
-</ul>
-</li>
-</ul>
-<p>Your simulation can use a combination of these, or you can create your own resources if this suits your use case better (e.g. if you prefer a vector with named entries for readability, instead of referencing components by index).</p>
-<div class="table-wrapper"><table><thead><tr><th></th><th>Vectors (f64)</th><th>Vectors (Vector3)</th><th>Sequences (String)</th></tr></thead><tbody>
-<tr><td>Resource</td><td><code>f64</code></td><td><code>Vector3</code></td><td><code>String</code></td></tr>
-<tr><td>Stock</td><td><code>VectorStock&lt;f64&gt;</code></td><td><code>VectorStock&lt;Vector3&gt;</code></td><td><code>SequenceStock&lt;String&gt;</code></td></tr>
-<tr><td>Process (1-in, 1-out)</td><td><code>VectorProcess&lt;f64, f64, f64&gt;</code></td><td><code>VectorProcess&lt;Vector3, Vector3, f64&gt;</code></td><td><code>SequenceProcess&lt;Option&lt;String&gt;&gt;</code></td></tr>
-<tr><td>Process (N-in, 1-out)</td><td><code>VectorCombiner&lt;f64, f64, f64, const M: usize&gt;</code></td><td><code>VectorCombiner&lt;Vector3, Vector3, f64, const M: usize&gt;</code></td><td>TBC</td></tr>
-<tr><td>Process (1-in, N-out)</td><td><code>VectorSplitter&lt;f64, f64, f64, const N: usize&gt;</code></td><td><code>VectorSplitter&lt;Vector3, Vector3, f64, const N: usize&gt;</code></td><td>TBC</td></tr>
-<tr><td>Process (0-in, 1-out)</td><td><code>VectorSource&lt;...&gt;</code></td><td><code>VectorSource&lt;...&gt;</code></td><td>TBC</td></tr>
-<tr><td>Process (1-in, 0-out)</td><td><code>VectorSink&lt;...&gt;</code></td><td><code>VectorSink&lt;...&gt;</code></td><td>TBC</td></tr>
-<tr><td>Example use case</td><td>Water tanks</td><td>Ore movements (using a vector to track elemental composition)</td><td>Customers at a Cafe</td></tr>
-</tbody></table>
-</div>
-<p><strong>Why so many generic type parameters?</strong></p>
-<p>The pre-defined generic structs <code>VectorProcess</code>, <code>SequenceStock</code> etc. can be used for any resource your simulation requires - as long as your resource satisfies all trait requirements. These requirements are checked at compiled time by the compiler, so if your code compiles, there's a good chance it will work.</p>
-<p>Specifically, for <code>VectorProcess&lt;T, U, V&gt;</code>:</p>
-<ul>
-<li><code>T</code> is your resource type</li>
-<li><code>U</code> is the parameter type that is sent by the process to any downstream components, and</li>
-<li><code>V</code> is the parameter type that is sent to upstream components to request material</li>
-</ul>
-<p>Thus <code>VectorProcess&lt;Vector3, Vector3, f64&gt;</code> is a 1-in, 1-out process which handles a <code>T=Vector3</code>, and is passed downstream as a <code>U=Vector3</code>. However, when requesting the upstream Stock for material, this process sends a <code>V=f64</code> corresponding to the total quantity of desired material, and the stock responds with a <code>T=Vector3</code>.</p>
-
+                        <h1 id="4-examples"><a class="header" href="#4-examples">4. Examples</a></h1>
+<p>A number of example simulations exist to act as a reference for how to apply the concepts covered in this guide, in practice:</p>
+<table>
+<thead>
+<tr>
+    <td>Example Name</td>
+    <td>Description</td>
+    <td>Concepts Demonstrated</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td><a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/material_blending.rs">material_blending.rs</a></td>
+    <td>Model of a stockyard with Reclaimers to remove material from multiple stockpiles, and a Stacker to add material to multiple stockpiles.</td>
+    <td class="badge-container">
+        <span class="badge">Pre-built components</span>
+        <span class="badge">Vector Resource (Vector3)</span>
+        <span class="badge">Splitters and Combiners</span>
+    </td>
+</tr>
+<tr>
+    <td><a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/discrete_queue.rs">discrete_queue.rs</a></td>
+    <td>Basic example demonstrating use of a Sequence resource of Strings. Processes and stocks are arranged in infinite loop.</td>
+    <td class="badge-container">
+        <span class="badge">Pre-built components</span>
+        <span class="badge">Sequence Resource (String)</span>
+        <span class="badge">Distribution Sampling</span>
+    </td>
+</tr>
+<tr>
+    <td><a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/iron_ore.rs">iron_ore.rs</a></td>
+    <td>Processes involving an Iron Ore resource, which tracks elemental mass composition, and composition by mineral types.</td>
+    <td class="badge-container">
+        <span class="badge">Custom vector resource</span>
+        <span class="badge">Distribution Sampling</span>
+    </td>
+</tr>
+</tbody>
+</table>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="chapter_2.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="chapter_3.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="examples.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -223,13 +209,10 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="chapter_2.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="chapter_3.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="examples.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
             </nav>
 
         </div>

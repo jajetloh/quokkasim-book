@@ -27,8 +27,10 @@ Your simulation can use a combination of these, or you can create your own resou
 |Resource|`f64`|`Vector3`|`String`|
 |Stock|`VectorStock<f64>`|`VectorStock<Vector3>`|`SequenceStock<String>`|
 |Process (1-in, 1-out)|`VectorProcess<f64, f64, f64>`|`VectorProcess<Vector3, Vector3, f64>`|`SequenceProcess<Option<String>>`|
-|Process (N-in, 1-out)| TBC | TBC | TBC |
-|Process (1-in, N-out)| TBC | TBC | TBC |
+|Process (N-in, 1-out)|`VectorCombiner<f64, f64, f64, const M: usize>` | `VectorCombiner<Vector3, Vector3, f64, const M: usize>`| TBC |
+|Process (1-in, N-out)|`VectorSplitter<f64, f64, f64, const N: usize>`|`VectorSplitter<Vector3, Vector3, f64, const N: usize>`| TBC |
+|Process (0-in, 1-out)|`VectorSource<...>`|`VectorSource<...>`|TBC|
+|Process (1-in, 0-out)|`VectorSink<...>`|`VectorSink<...>`|TBC|
 |Example use case|Water tanks|Ore movements (using a vector to track elemental composition)|Customers at a Cafe|
 
 **Why so many generic type parameters?**

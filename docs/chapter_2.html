@@ -214,6 +214,34 @@ We have a stock representing a queue of customers, which is processed by a baris
 <p align="center"><img src="images/barista_6.svg" alt="Barista 6" /><p>
 <p><em>Waiting for drinks</em> has reduced from 3 people to 1 person, meaning its state has changed from <em>Full</em> to <em>Empty</em>. This change of state triggers any upstream or downstream processes to update, meaning that <em>Barista taking orders</em> is triggered to update.</p>
 <p><em>Barista taking orders</em> checks both upstream and downstream state again, finds both are <em>Normal</em>, so then begins processing D.</p>
+<h2 id="24-a-taxonomy-of-processes"><a class="header" href="#24-a-taxonomy-of-processes">2.4. A Taxonomy of Processes</a></h2>
+<p>In QuokkaSim, Processes are at the heart of all dynamic behaviours. We wish to make our processes as flexible as possible to allow us to test whatever we wish, but also to have as few different types of process, to minimise complexity and the mental burden of reasoning about them. With a small set of well-defined components, modellers who are new to QuokkaSim are able to pick up the framework quickly, and effectively translate real-world scenarios to a model representation.</p>
+<p>Note that we are not saying you have to follow this taxonomy or these concepts. You are free to create your own components suited to your use cases. If you have a case that isn't well suited to using our components, we'd like to hear about it! If such use cases are common, we will consider adding them as components in QuokkaSim directly.</p>
+<div class="table-wrapper"><table><thead><tr><th>Concept</th><th># Inputs</th><th># Outputs</th><th>Conserves resources?</th></tr></thead><tbody>
+<tr><td>Simple Process</td><td>1</td><td>1</td><td>✅ Yes</td></tr>
+<tr><td>Source</td><td>0</td><td>1</td><td>❌ Creates resources</td></tr>
+<tr><td>Sink</td><td>1</td><td>0</td><td>❌ Destroys resources</td></tr>
+<tr><td>Combiner</td><td>N</td><td>1</td><td>✅ Yes</td></tr>
+<tr><td>Splitter</td><td>1</td><td>N</td><td>✅ Yes</td></tr>
+</tbody></table>
+</div>
+<h3 id="241-resource-conservation"><a class="header" href="#241-resource-conservation">2.4.1. Resource Conservation</a></h3>
+<p>In most systems, there can be a natural sense of conservation, or of balance. For example:</p>
+<ul>
+<li>In a transport simulation, a <code>Car { car_id: u32, make: String, model: String }</code> resource should not be created or destroyed in most processes. Cars are a conserved quantity in this context.</li>
+<li>In a manufacturing simulation where we track the parts of a car through the manufacturing process via a vector of masses <code>ProtoCar { assembled_kg: f64, loose_tyres_kg: f64, loose_engine_kg: f64 }</code>, the total mass of parts through our system should be conserved, except where new parts are introduced into the system or the assembled car is removed from the system. However, the individual components like <code>loose_tyres_kg</code> are not conserved, and can be transformed into <code>assembled_kg</code> subject to the total mass being conserved.</li>
+<li>In an ore crushing operation, where a crusher processes large rocks into smaller pieces, we may use a vector of masses <code>Ore { small: f64, medium: f64, large: f64 }</code>. The crusher may transform large pieces into small or medium pieces, but the total mass is conserved.</li>
+</ul>
+<p>By having most processes conserving resources, the key activities of resource and creation are separated out into their own proceses, which can be monitored with more scrutiny than other processes.</p>
+<h3 id="242-types-of-combiners-and-splitters"><a class="header" href="#242-types-of-combiners-and-splitters">2.4.2. Types of Combiners and Splitters</a></h3>
+<p>Combiners and Splitters can be further classified by whether or not inputs/outputs are <strong>AND-like (combinations)</strong> or <strong>XOR-like (choices)</strong> - or a combination of both.</p>
+<p>What does this mean? Let's think through a couple of examples of combiners first.</p>
+<p align="center"><img src="images/combiner_xor.svg" alt="XOR Combiner" /><p>
+<p>Let's say you're a delivery driver. At your disposal is a number of cars, vans and trucks. Each distinct set of vehicle is a stock, but you can only choose to take from one of these stocks at this time. This is an <strong>XOR-like</strong> combiner process, as you must choose a car <strong>or</strong> a van <strong>or</strong> a truck - where <strong>or</strong> is an <strong>exclusive or</strong> (XOR).</p>
+<p align="center"><img src="images/combiner_and.svg" alt="AND Combiner" /><p>
+<p>On the other hand, let's say you are combining the ingredients for a cake - butter, sugar, eggs and flour. In this case, we want a combination of all four in a specific ratio, not an exclusive choice of one of them. In general we want a <strong>combination</strong> of some quantity of butter <strong>and</strong> sugar <strong>and</strong> eggs <strong>and</strong> flour (though in an edge case some quantities may be 0), thus this is a <strong>AND-like</strong> process.</p>
+<p>An example of a more general combiner which has both XOR and AND elements is the above cake batter example, but where you have to choose exclusively from different types of sugar like White Sugar, Brown Sugar and Honey.</p>
+<p>A similar breakdown can be made of Splitters. XOR-like splitters push material into one stock at a time. AND-like splitters generally push material into all downstream stocks at once. And a more general splitter can push into multiple, but have some exclusivity constraints.</p>
 
                     </main>
 

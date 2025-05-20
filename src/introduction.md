@@ -9,17 +9,7 @@ Welcome to the **QuokkaSim Book** – your guide to learning and mastering Quokk
 
 ## What is QuokkaSim?
 
-QuokkaSim is a high-performance, event-driven simulation framework written in Rust, on top of the [NeXosim](https://github.com/asynchronics/nexosim) simulation engine. It provides:
-
-- A type-safe **Model** and **Context** API  
-- Monotonic, reproducible **time** scheduling  
-- Pluggable **event handlers** and **plugins**  
-- Zero-cost abstractions and minimal runtime overhead
-
-Use QuokkaSim to build:
-- Network simulators  
-- Discrete-event process models  
-- Queuing systems and more
+QuokkaSim is a high-performance, event-driven simulation framework written in Rust, on top of the [NeXosim](https://github.com/asynchronics/nexosim) simulation engine.
 
 ---
 
