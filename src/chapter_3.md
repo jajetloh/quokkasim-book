@@ -9,15 +9,20 @@ Now that we've understood the core concepts used by QuokkaSim, let's look at how
 QuokkaSim supports the following Resource types out-of-the-box:
 
 - **Vectors (f64)**
-  - Use when your data can be represented as simple numeric quantities.
-  - Example: `VectorStock<f64>` tracks quantities like capacity, consumption, or other scalar values.
+  - Use when your quantity of interest is a single number that can take a continuous range of values.
+  - e.g. For modelling power consumption, your `f64` can represent Energy in Joules
+  - e.g. For modelling material flow, your `f64` can represent payload mass in kg
+  - `VectorProcess<f64>`, `VectorStock<f64>` and other similar components can be used out-of-the-box
 
 - **Vectors (Vector3)**
-  - Use when your simulation involves multi-dimensional data (for example, spatial coordinates or RGB color channels).
-  - Example: `VectorStock<Vector3>` is great for modeling 3D measurements.
+  - Use when your quantity of interest has up to three independent components of interest
+  - e.g. For modelling nutrient consumption in crops, your `Vector3` can represent masses of Nitrogen, Phsophorous and Potassium elements
+  - e.g. For modelling an iron ore mine, your `Vector3` can represent Iron, Silica and other elements by mass
+  - `VectorProcess<Vector3>`, `VectorStock<Vector3>` and other similar components can be used out-of-the-box
 
 - **Sequences (String)**
   - Use for models where data is represented as sequences or lists of identifiers.
+  - Use when your quantity of interest experiencing queuing or other behaviours dependent on other relative ordering
   - Example: `SequenceStock<String>` is useful for handling events or discrete item identifiers.
 
 Your simulation can use a combination of these, or you can create your own resources if this suits your use case better (e.g. if you prefer a vector with named entries for readability, instead of referencing components by index).
