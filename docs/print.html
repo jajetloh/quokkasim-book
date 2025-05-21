@@ -160,11 +160,25 @@
 <p>Welcome to the <strong>QuokkaSim Book</strong> – your guide to learning and mastering QuokkaSim, the Rust-based discrete-event simulation framework.</p>
 <blockquote>
 <p><strong>Note:</strong><br />
-QuokkaSim is under active development. If you find typos or missing features, let JJ know!</p>
+QuokkaSim is under <strong>very active</strong> development. Let JJ know if:</p>
+<ul>
+<li>You find mistakes, typos or missing information</li>
+<li>You have ideas to contribute, or want to contribute in a more hands-on capacity</li>
+<li>You're unsure if QuokkaSim is suitable for your use case. If it's not, let's discuss how it can be!</li>
+</ul>
+<p>If you are reading this, you probably already know how to contact me 😉 - JJ</p>
 </blockquote>
 <hr />
 <h2 id="what-is-quokkasim"><a class="header" href="#what-is-quokkasim">What is QuokkaSim?</a></h2>
 <p>QuokkaSim is a high-performance, event-driven simulation framework written in Rust, on top of the <a href="https://github.com/asynchronics/nexosim">NeXosim</a> simulation engine.</p>
+<p>QuokkaSim is also:</p>
+<ul>
+<li>Open source</li>
+<li>Permissively licensed (MIT License)</li>
+<li>Memory-safe</li>
+<li>Highly performant, via the NeXosim crate</li>
+<li>Accessible to new simulation modellers and new Rust developers</li>
+</ul>
 <hr />
 <h2 id="who-should-read-this-book"><a class="header" href="#who-should-read-this-book">Who should read this book?</a></h2>
 <p>This book is written for:</p>
@@ -424,7 +438,17 @@ fn main() {
     stock_logger.write_csv(output_dir.clone()).unwrap();
 }</code></pre></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-2-a-conceptual-overview"><a class="header" href="#chapter-2-a-conceptual-overview">Chapter 2: A Conceptual Overview</a></h1>
-<p>In Chapter 1 we ran some code for our first simulation, but now we'll try to cover the core concepts used for modelling in QuokkaSim, before we look again at the code to understand better what's happening.</p>
+<p>In this chapter, we cover the main concepts defined and used in QuokkaSim, and how to map your real-world scenario into these concepts, which we will later cover how to implement as a model in Chapter 3.</p>
+<p>This chapter increases in theoretical depth as it progresses. If you are new to simulations, up to Chapter 2.3. is recommended.</p>
+<p>Chapter 2.4. is recommended if you are needing to build more customised components and structures than what QuokkaSim provides out-of-the-box.</p>
+<p>After reading this chapter you should:</p>
+<ul>
+<li>Understand QuokkaSim as a <strong>Discrete Event Simulation</strong> framework, and the contexts in which such a DES framework is applicable</li>
+<li>Understand the core concepts of <strong>Resources, Stocks and Processes</strong>, and examples of how real-world scenarios can be mapped to these concepts</li>
+<li>Have a basic understanding of the <strong>interactions</strong> between Processes and Stocks, via the exchange of Resources, and how these <strong>events for a process are triggered internally and externally</strong></li>
+<li>Be familiar with the concepts of <strong>Resource conservation</strong>, and how this relates to Sources, Sink and other types of Process</li>
+<li>Be familiar with the classification of Splitters and Combiners as <strong>AND-like</strong>, <strong>OR-like</strong> or <strong>a combination of both</strong>.</li>
+</ul>
 <hr />
 <h2 id="21-discrete-event-simulation-and-the-schedule"><a class="header" href="#21-discrete-event-simulation-and-the-schedule">2.1. Discrete Event Simulation and the Schedule</a></h2>
 <p>Simulations answer "what-if" questions, most commonly about what is the result of a set of initial conditions, rules, and controls.</p>
@@ -446,7 +470,7 @@ fn main() {
 <li>Preparing drinks at a cafe, or</li>
 <li>Car assembly at a factory</li>
 </ul>
-<p>In these situations, it can be very inefficient to update every component of the system at every timestep. A better approach here is to only update the system at the exact timesteps where something will happen! This is the approach taken in Discrete Even Simulation.</p>
+<p>In these situations, it can be very inefficient to update every component of the system at every timestep. A better approach here is to only update the system at the exact timesteps where something will happen! This is the approach taken in Discrete Event Simulation.</p>
 <p>In Discrete Event Simulation, an ordered schedule of events is maintained, and time jumps forward to the next event, which in turns can schedule more events.</p>
 <h2 id="22-resources-stocks-and-processes"><a class="header" href="#22-resources-stocks-and-processes">2.2. Resources, Stocks and Processes</a></h2>
 <p>TL;DR:</p>
@@ -465,12 +489,12 @@ fn main() {
 <p><strong>Time = Initial</strong></p>
 <p align="center"><img src="images/barista_1.svg" alt="Barista 1" /><p>
 We have a stock representing a queue of customers, which is processed by a barista who takes drink orders, before customers go into another queue to wait for their drink. The starting point of the simulation is shown in the diagram, with 3 people in line, and 1 person waiting for their drink.
-<p>Remember that Discrete Event Simulations rely on scheduled events triggering more events. There are no events at the start of the simulation, so we kick-start the simulation at the start by telling our Process to update its own state.</p>
+<p>Remember that Discrete Event Simulations relies on scheduled events triggering more events. There are no events at the start of the simulation, so we kick-start the simulation at the start by telling our <em>Barista taking orders</em> Process to update itself.</p>
 <p><strong>Time = 0:00</strong></p>
 <p align="center"><img src="images/barista_2.svg" alt="Barista 2" /><p>
 <p>The barista can only process a customer if a customer is in the queue, and if there is sufficient room in the waiting area (or perhaps just to not overwhelm the baristas who are making the drinks).</p>
-<p>So first, the process retrieves the current state of the upstream stock (Queued Customers) and downstream stock (Waiting for drinks). For now, stocks can have one of three states: Empty, Normal and Full.</p>
-<p>Queued customers is Full and Waiting for drinks is Normal. In this case, the barista can take an order, so the process seizes the front-most customer from the queue, and schedules a new event to occur in 30 seconds, when the ordering is complete.</p>
+<p>First, the process retrieves the current state of the upstream stock (<em>Queued Customers</em>) and downstream stock (<em>Waiting for drinks</em>). For now, stocks can have one of three states: Empty, Normal and Full.</p>
+<p><em>Queued customers</em> is Full and <em>Waiting for drinks</em> is Normal. In this case, the barista can take an order, so the process seizes the front-most customer from the queue, and schedules a new event to occur in 30 seconds, when the ordering is complete.</p>
 <p><strong>Time = 0:30</strong></p>
 <p align="center"><img src="images/barista_3.svg" alt="Barista 3" /><p>
 <p>30 seconds later, the event triggers <em>Barista taking orders</em> is prompted to update itself again. This time, it first moves Customer B moves into the <em>Waiting for drinks</em> stock, before checking upstream and downstream states again. This time both states are <em>Normal</em>, in which case the process seizes the next customer and repeats.</p>
@@ -480,10 +504,10 @@ We have a stock representing a queue of customers, which is processed by a baris
 <p><em>Barista taking orders</em> is again triggered to update its state, and moves C into <em>Waiting for drinks</em>. This time the upstream and downstream states are <em>Normal</em> and <em>Full</em>. Because downstream is full, we do not process the next customer, and instead wait until we are triggered to update again.</p>
 <p><strong>Time = 1:15</strong></p>
 <p align="center"><img src="images/barista_6.svg" alt="Barista 6" /><p>
-<p><em>Waiting for drinks</em> has reduced from 3 people to 1 person, meaning its state has changed from <em>Full</em> to <em>Empty</em>. This change of state triggers any upstream or downstream processes to update, meaning that <em>Barista taking orders</em> is triggered to update.</p>
+<p><em>Waiting for drinks</em> has reduced from 3 people to 1 person, meaning its state has changed from <em>Full</em> to <em>Normal</em>. This change of state triggers any upstream or downstream processes to update, meaning that <em>Barista taking orders</em> is triggered to update.</p>
 <p><em>Barista taking orders</em> checks both upstream and downstream state again, finds both are <em>Normal</em>, so then begins processing D.</p>
 <h2 id="24-a-taxonomy-of-processes"><a class="header" href="#24-a-taxonomy-of-processes">2.4. A Taxonomy of Processes</a></h2>
-<p>In QuokkaSim, Processes are at the heart of all dynamic behaviours. We wish to make our processes as flexible as possible to allow us to test whatever we wish, but also to have as few different types of process, to minimise complexity and the mental burden of reasoning about them. With a small set of well-defined components, modellers who are new to QuokkaSim are able to pick up the framework quickly, and effectively translate real-world scenarios to a model representation.</p>
+<p>In QuokkaSim, Processes are at the heart of all dynamic behaviours. We wish to make our processes as flexible as possible to allow us to test whatever we wish. However, we also wish to have as minimal of a set of these processes as possible, to minimise complexity and the mental burden of reasoning about them. With a small set of well-defined components, modellers who are new to QuokkaSim are able to pick up the framework quickly, and effectively translate real-world scenarios to a model representation.</p>
 <p>Note that we are not saying you have to follow this taxonomy or these concepts. You are free to create your own components suited to your use cases. If you have a case that isn't well suited to using our components, we'd like to hear about it! If such use cases are common, we will consider adding them as components in QuokkaSim directly.</p>
 <div class="table-wrapper"><table><thead><tr><th>Concept</th><th># Inputs</th><th># Outputs</th><th>Conserves resources?</th></tr></thead><tbody>
 <tr><td>Simple Process</td><td>1</td><td>1</td><td>✅ Yes</td></tr>
@@ -500,16 +524,16 @@ We have a stock representing a queue of customers, which is processed by a baris
 <li>In a manufacturing simulation where we track the parts of a car through the manufacturing process via a vector of masses <code>ProtoCar { assembled_kg: f64, loose_tyres_kg: f64, loose_engine_kg: f64 }</code>, the total mass of parts through our system should be conserved, except where new parts are introduced into the system or the assembled car is removed from the system. However, the individual components like <code>loose_tyres_kg</code> are not conserved, and can be transformed into <code>assembled_kg</code> subject to the total mass being conserved.</li>
 <li>In an ore crushing operation, where a crusher processes large rocks into smaller pieces, we may use a vector of masses <code>Ore { small: f64, medium: f64, large: f64 }</code>. The crusher may transform large pieces into small or medium pieces, but the total mass is conserved.</li>
 </ul>
-<p>By having most processes conserving resources, the key activities of resource and creation are separated out into their own proceses, which can be monitored with more scrutiny than other processes.</p>
+<p>By having most processes conserving resources, the key activities of resource creation and destruction are separated out into their own proceses, which can be monitored with more scrutiny than other processes.</p>
 <h3 id="242-types-of-combiners-and-splitters"><a class="header" href="#242-types-of-combiners-and-splitters">2.4.2. Types of Combiners and Splitters</a></h3>
 <p>Combiners and Splitters can be further classified by whether or not inputs/outputs are <strong>AND-like (combinations)</strong> or <strong>XOR-like (choices)</strong> - or a combination of both.</p>
 <p>What does this mean? Let's think through a couple of examples of combiners first.</p>
 <p align="center"><img src="images/combiner_xor.svg" alt="XOR Combiner" /><p>
 <p>Let's say you're a delivery driver. At your disposal is a number of cars, vans and trucks. Each distinct set of vehicle is a stock, but you can only choose to take from one of these stocks at this time. This is an <strong>XOR-like</strong> combiner process, as you must choose a car <strong>or</strong> a van <strong>or</strong> a truck - where <strong>or</strong> is an <strong>exclusive or</strong> (XOR).</p>
 <p align="center"><img src="images/combiner_and.svg" alt="AND Combiner" /><p>
-<p>On the other hand, let's say you are combining the ingredients for a cake - butter, sugar, eggs and flour. In this case, we want a combination of all four in a specific ratio, not an exclusive choice of one of them. In general we want a <strong>combination</strong> of some quantity of butter <strong>and</strong> sugar <strong>and</strong> eggs <strong>and</strong> flour (though in an edge case some quantities may be 0), thus this is a <strong>AND-like</strong> process.</p>
+<p>On the other hand, let's say you are combining the ingredients for a cake - butter, sugar, eggs and flour. In this case, we want a combination of all four in a specific ratio, not an exclusive choice of one of them. In general we want a <strong>combination</strong> of some quantity of butter <strong>and</strong> sugar <strong>and</strong> eggs <strong>and</strong> flour (though in an edge case some quantities may be 0), thus this is a <strong>AND-like</strong> combiner process.</p>
 <p>An example of a more general combiner which has both XOR and AND elements is the above cake batter example, but where you have to choose exclusively from different types of sugar like White Sugar, Brown Sugar and Honey.</p>
-<p>A similar breakdown can be made of Splitters. XOR-like splitters push material into one stock at a time. AND-like splitters generally push material into all downstream stocks at once. And a more general splitter can push into multiple, but have some exclusivity constraints.</p>
+<p>A similar breakdown can be made of Splitters. XOR-like splitters push material into one stock at a time. AND-like splitters generally push material into all downstream stocks at once. A more general splitter can push into multiple, but have some exclusivity constraints.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-3-a-basic-simulation-model"><a class="header" href="#chapter-3-a-basic-simulation-model">Chapter 3: A Basic Simulation Model</a></h1>
 <p>Now that we've understood the core concepts used by QuokkaSim, let's look at how we assemble a simple simulation model from scratch.</p>
 <hr />
@@ -519,21 +543,26 @@ We have a stock representing a queue of customers, which is processed by a baris
 <li>
 <p><strong>Vectors (f64)</strong></p>
 <ul>
-<li>Use when your data can be represented as simple numeric quantities.</li>
-<li>Example: <code>VectorStock&lt;f64&gt;</code> tracks quantities like capacity, consumption, or other scalar values.</li>
+<li>Use when your quantity of interest is a single number that can take a continuous range of values.</li>
+<li>e.g. For modelling power consumption, your <code>f64</code> can represent Energy in Joules</li>
+<li>e.g. For modelling material flow, your <code>f64</code> can represent payload mass in kg</li>
+<li><code>VectorProcess&lt;f64&gt;</code>, <code>VectorStock&lt;f64&gt;</code> and other similar components can be used out-of-the-box</li>
 </ul>
 </li>
 <li>
 <p><strong>Vectors (Vector3)</strong></p>
 <ul>
-<li>Use when your simulation involves multi-dimensional data (for example, spatial coordinates or RGB color channels).</li>
-<li>Example: <code>VectorStock&lt;Vector3&gt;</code> is great for modeling 3D measurements.</li>
+<li>Use when your quantity of interest has up to three independent components of interest</li>
+<li>e.g. For modelling nutrient consumption in crops, your <code>Vector3</code> can represent masses of Nitrogen, Phsophorous and Potassium elements</li>
+<li>e.g. For modelling an iron ore mine, your <code>Vector3</code> can represent Iron, Silica and other elements by mass</li>
+<li><code>VectorProcess&lt;Vector3&gt;</code>, <code>VectorStock&lt;Vector3&gt;</code> and other similar components can be used out-of-the-box</li>
 </ul>
 </li>
 <li>
 <p><strong>Sequences (String)</strong></p>
 <ul>
 <li>Use for models where data is represented as sequences or lists of identifiers.</li>
+<li>Use when your quantity of interest experiencing queuing or other behaviours dependent on other relative ordering</li>
 <li>Example: <code>SequenceStock&lt;String&gt;</code> is useful for handling events or discrete item identifiers.</li>
 </ul>
 </li>

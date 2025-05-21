@@ -164,21 +164,26 @@
 <li>
 <p><strong>Vectors (f64)</strong></p>
 <ul>
-<li>Use when your data can be represented as simple numeric quantities.</li>
-<li>Example: <code>VectorStock&lt;f64&gt;</code> tracks quantities like capacity, consumption, or other scalar values.</li>
+<li>Use when your quantity of interest is a single number that can take a continuous range of values.</li>
+<li>e.g. For modelling power consumption, your <code>f64</code> can represent Energy in Joules</li>
+<li>e.g. For modelling material flow, your <code>f64</code> can represent payload mass in kg</li>
+<li><code>VectorProcess&lt;f64&gt;</code>, <code>VectorStock&lt;f64&gt;</code> and other similar components can be used out-of-the-box</li>
 </ul>
 </li>
 <li>
 <p><strong>Vectors (Vector3)</strong></p>
 <ul>
-<li>Use when your simulation involves multi-dimensional data (for example, spatial coordinates or RGB color channels).</li>
-<li>Example: <code>VectorStock&lt;Vector3&gt;</code> is great for modeling 3D measurements.</li>
+<li>Use when your quantity of interest has up to three independent components of interest</li>
+<li>e.g. For modelling nutrient consumption in crops, your <code>Vector3</code> can represent masses of Nitrogen, Phsophorous and Potassium elements</li>
+<li>e.g. For modelling an iron ore mine, your <code>Vector3</code> can represent Iron, Silica and other elements by mass</li>
+<li><code>VectorProcess&lt;Vector3&gt;</code>, <code>VectorStock&lt;Vector3&gt;</code> and other similar components can be used out-of-the-box</li>
 </ul>
 </li>
 <li>
 <p><strong>Sequences (String)</strong></p>
 <ul>
 <li>Use for models where data is represented as sequences or lists of identifiers.</li>
+<li>Use when your quantity of interest experiencing queuing or other behaviours dependent on other relative ordering</li>
 <li>Example: <code>SequenceStock&lt;String&gt;</code> is useful for handling events or discrete item identifiers.</li>
 </ul>
 </li>
