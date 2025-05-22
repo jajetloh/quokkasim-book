@@ -21,9 +21,8 @@ QuokkaSim supports the following Resource types out-of-the-box:
   - `VectorProcess<Vector3>`, `VectorStock<Vector3>` and other similar components can be used out-of-the-box
 
 - **Sequences (String)**
-  - Use for models where data is represented as sequences or lists of identifiers.
   - Use when your quantity of interest experiencing queuing or other behaviours dependent on other relative ordering
-  - Example: `SequenceStock<String>` is useful for handling events or discrete item identifiers.
+  - e.g. For modelling a queue of vehicles, your `String` can be a unique identifier for a car
 
 Your simulation can use a combination of these, or you can create your own resources if this suits your use case better (e.g. if you prefer a vector with named entries for readability, instead of referencing components by index).
 
@@ -48,3 +47,75 @@ Specifically, for `VectorProcess<T, U, V>`:
 - `V` is the parameter type that is sent to upstream components to request material
 
 Thus `VectorProcess<Vector3, Vector3, f64>` is a 1-in, 1-out process which handles a `T=Vector3`, and is passed downstream as a `U=Vector3`. However, when requesting the upstream Stock for material, this process sends a `V=f64` corresponding to the total quantity of desired material, and the stock responds with a `T=Vector3`.
+
+## 3.2. The Core Enums
+
+At the beginning of all the example simulations is a section that looks like this:
+
+```rust
+define_model_enums! {
+    pub enum ComponentModel {}
+    pub enum ComponentLogger {}
+    pub enum ComponentInit {}
+}
+
+impl CustomComponentConnection for ComponentModel {
+    fn connect_components(a: &mut Self, b: &mut Self, n: Option<usize>) -> Result<(), Box<dyn Error>> {
+        match (a, b) {
+            (a, b) => Err(format!("No component connection defined from {} to {} (n={:?})", a, b, n).into()),
+        }
+    }
+}
+
+impl CustomLoggerConnection for ComponentLogger { 
+    type ComponentType = ComponentModel;
+    fn connect_logger(a: &mut Self, b: &mut Self::ComponentType, n: Option<usize>) -> Result<(), Box<dyn Error>> {
+        match (a, b, n) {
+            (a, b, _) => Err(format!("No logger connection defined from {} to {} (n={:?})", a, b, n).into()),
+        }
+    }
+}
+
+impl CustomInit for ComponentInit {
+    fn initialise(&mut self, simu: &mut Simulation) -> Result<(), ExecutionError> {
+        let notif_meta = NotificationMetadata {
+            time: simu.time(),
+            element_from: "Init".into(),
+            message: "Start".into(),
+        };
+        match self {
+            _ => {
+                Err(ExecutionError::BadQuery)
+            }
+        }
+    }
+}
+```
+
+Let's break down what's going on here
+
+``define_model_enums!`` is a macro provided by QuokkaSim, which is used to help define a number of key Enums that are required. In our examples for clarity they are all named `ComponentModel`, `ComponentLogger` and `ComponentInit` respectively. You are able to choose your own names for each in the body of the macro call, but note the order that they are specified determines the role that each enum plays.
+
+- `ComponentModel` is an Enum whose variants are all possible Stocks and Processes in our model. The `define_model_enums!` macro populates this enum with all of QuokkaSim's pre-built components (e.g. `VectorProcessF64(f64)`, `SequenceStockString(SequenceStock<String>)`).
+
+  If we have our own custom-defined components, we can add them to this enum to register them as a usable component.
+
+- `ComponentLogger` is an Enum whose variants are all possible objects that are able to collect logs from our components, and export these logs.
+
+  If we have our own custom-defined loggers, we can add them to this enum to register them as a usable logger.
+
+- `ComponentInit` is an Enum whose variants are all possible ways that objects should be initialised after model creation, but before the first event.
+
+  If we have our own custom initialisations (for our own components, or custom initialisations for existing components), we can add them to this enum to register them as a usable initialisation.
+
+In addition to these enums, a number of special function macros are also defined in `define_model_enums`.
+
+- `connect_components!` is used to define a connection between two components - typically a Stock and Process, or Process to Stock. In the case where a Process has multiple upstream or downstream stocks, an additional parameter is required to determine the specific upstream or downstream stock that is meant.
+
+- `connect_logger!` is used to define a connection between a component and a logger.
+
+- `register_component!` is used to add the constructed component to the model execution engine.
+
+---
+
+After `define_model_enums!` are a number of trait implementations. These trait implementations are how we define the details of what any sort of 'connection' means. Note that the methods implemented in t hese traits have the same name as the function macros defined in `define_model_enums`. This is because each of our functions here are called within the respective function macros if a pre-defined implementation does not exist for the enum variants passed into the function.
