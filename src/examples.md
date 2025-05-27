@@ -1,4 +1,4 @@
-# 4. Examples
+# Chapter 4: Examples
 
 A number of example simulations exist to act as a reference for how to apply the concepts covered in this guide, in practice:
 

@@ -1,10 +1,101 @@
-# Chapter 3: A Basic Simulation Model
+# Chapter 3: Building your Simulation Model
 
-Now that we've understood the core concepts used by QuokkaSim, let's look at how we assemble a simple simulation model from scratch.
+Now that we've understood the core concepts used by QuokkaSim, let's look at how we assemble a simulation model from scratch.
+
+1. Definitions
+2. Model Assembly
+3. Execution and Logging
+
+This chapter will explain the purpose of the specific structs, enums, traits and macros provided by QuokkaSim. Code snippets are also used, but are only for demonstrating individual concepts. Numerous full examples of working simulations can be found in [Chapter 4: Examples](examples.md).
 
 ---
 
-## 3.1. Choose Your Data Structures
+## 3.1. Definitions
+
+A set of four enums comprise the core of QuokkaSim, and these are declared within the **`define_model_enums!`** macro like this:
+
+```rust
+define_model_enums! {
+    pub enum ComponentModel {}
+    pub enum ComponentModelAddress {}
+    pub enum ComponentLogger {}
+    pub enum ScheduledEvent {}
+}
+```
+
+Though the enums look empty, `define_model_enums!` endows each of them with all of QuokkaSim's pre-built components, so in reality ComponentModel acts more like this:
+
+```rust
+pub enum ComponentModel {
+    VectorStockF64(VectorStock<f64>, Mailbox<VectorStock<f64>>),
+    VectorProcessF64(VectorProcess<f64>, Mailbox<VectorProcess<f64>>),
+    ...
+}
+```
+
+**`ComponentModel`** is an enum containing all elements we wish to take part in the simulation. Specifically, it must contain all concrete stocks and processes we wish to use. By ensuring that all components are contained as variants in `ComponentModel`, this allows us to later perform much more powerful operations across all components, such as being able to construct a simulation model from a JSON or TOML file.
+
+Each variant contains both the instance of the component, as well as a **`Mailbox`** for the variant. The `Mailbox` a NeXosim struct, and is the single point which receives all inbound communications to the component.
+
+If we wish to use our own custom components, we can register them as variants in `ComponentModel` like this:
+
+```rust
+define_model_enums! {
+    pub enum ComponentModel {
+        MyNewComponent(MyNewComponentStruct, Mailbox<MyNewComponentStruct>),
+    }
+    pub enum ComponentModelAddress {}
+    pub enum ComponentLogger {}
+    pub enum ScheduledEvent {}
+}
+```
+
+**`ComponentModelAddress`** is an enum containing the **`Address`** of all our components. An `Address` is simply a reference to a specific `Mailbox`. While only a single `Mailbox` exists per component, we can get the `Address` from the `Mailbox` and pass ownership and clone as we please. We will use the `Address` to make calls to kick-start the model execution and also to schedule fixed events.
+
+If we wish to use our own custom components, after defining them in `ComponentModel`, the `define_model_enums!` macro creates the corresponding variant in `ComponentModelAddress`, which looks like this. We don't need to manually add them to `ComponentModelAddress`!
+
+```rust
+pub enum ComponentModelAddress {
+    VectorStockF64(Address<VectorStock<f64>>),
+    VectorProcessF64(Address<VectorProcess<f64>>),
+    ...
+    MyNewComponent(Address<MyNewComponentStruct>),
+}
+```
+
+**`ComponentLogger`** is an enum containing all unique structs that we wish to be able to collect logs in, and export logs from. QuokkaSim comes pre-built with one type of logger for each standard stock, and each standard process - meaning that all processes (simple processes, splitters, and combiners) for the `Vector3` resource, share the `VectorProcessLoggerVector3` logger, and thus can all export logs into a single file if desired.
+
+Our enums here must contain concrete types (no generic type parameters!), so if we are using our own custom resource, or creating an entirely new `Logger` struct, we must register them like this:
+
+```rust
+define_model_enums! {
+    pub enum ComponentModel {
+        MyNewComponent(MyNewComponentStruct, Mailbox<MyNewComponentStruct>),
+    }
+    pub enum ComponentModelAddress {}
+    pub enum ComponentLogger {
+        MyNewVectorLogger(VectorProcessLogger<MyNewResource>), // e.g. adding a new vector resource
+        MyNewCustomLogger(MyNewCustomLoggerStruct),            // e.g. adding a new type of Logger
+    }
+    pub enum ScheduledEvent {}
+}
+```
+
+Finally, **`ScheduledEvent`** contains all the ways for us to push certain events at select times during the model run, such as a capacity change or a change of distributions. `ScheduledEvent` looks like this:
+
+```rust
+pub enum ScheduledEvent {
+    SetMaxCapacity(f64),
+    SetProcessTime(DistributionConfig),
+    ...
+}
+```
+
+Note that the variants of `ScheduledEvent` aren't tied to a single type of component. This is because we are able to later define for each component, what each of these events means.
+
+## 3.2. Model Assembly
+
+## 3.3. Choose Your Data Structures
 
 QuokkaSim supports the following Resource types out-of-the-box:
 
@@ -48,7 +139,7 @@ Specifically, for `VectorProcess<T, U, V>`:
 
 Thus `VectorProcess<Vector3, Vector3, f64>` is a 1-in, 1-out process which handles a `T=Vector3`, and is passed downstream as a `U=Vector3`. However, when requesting the upstream Stock for material, this process sends a `V=f64` corresponding to the total quantity of desired material, and the stock responds with a `T=Vector3`.
 
-## 3.2. The Core Enums
+## 3.4. The Core Enums
 
 At the beginning of all the example simulations is a section that looks like this:
 

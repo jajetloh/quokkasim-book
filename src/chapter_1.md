@@ -69,7 +69,6 @@ Use `cargo run` to run the simulation, and we have our logs in the `outputs/exam
 ---
 
 ## Full Code
-
 ```rust,no_run
 {{#include ../playground/src/bin/example_0.rs:all}}
 ```
