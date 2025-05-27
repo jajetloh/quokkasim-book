@@ -12,6 +12,8 @@ This chapter will explain the purpose of the specific structs, enums, traits and
 
 ## 3.1. Definitions
 
+### 3.1.1. Enums
+
 A set of four enums comprise the core of QuokkaSim, and these are declared within the **`define_model_enums!`** macro like this:
 
 ```rust
@@ -92,6 +94,59 @@ pub enum ScheduledEvent {
 ```
 
 Note that the variants of `ScheduledEvent` aren't tied to a single type of component. This is because we are able to later define for each component, what each of these events means.
+
+
+{{#quiz ./chapter_3_enum_quiz.toml}}
+
+### 3.1.2. Macros
+
+In addition to defining enums, the `define_model_enums!` macro also defines a number of functions (which are actually macros) that we will use to assemble our model. The fact they are defined within the `define_model_enums!` call means that they are able to work with any custom components and loggers added, and also mean they do not have to be imported via `use` like `define_model_enums!`.
+
+The four functions defined here are:
+
+```rust
+fn connect_components!(
+    comp1: &mut ComponentModel,
+    comp2: &mut ComponentModel,
+    n: Option<usize> = None
+) { ... }
+
+fn connect_logger!(
+    logger: &mut ComponentLogger,
+    comp: &mut ComponentModel,
+    n: Option<usize> = None
+) { ... }
+
+fn register_component!(
+    sim_init: SimInit,
+    comp: ComponentModel
+) -> SimInit { ... }
+
+fn create_scheduled_event!(
+    &mut Scheduler,
+    MonotonicTime,
+    ScheduledEvent,
+    ComponentModelAddres,
+    &mut DistributionFactory
+) { ... }
+```
+
+**`connect_components!(&mut comp1, &mut comp2)`** defines a directional relationship, with `comp1` upstream and `comp2` downstream - meaining in this connection, resources flow from `comp1` to `comp2`.
+
+If `comp1` is a splitter, this means there are multiple outputs from `comp1` and we must define which output we wish to connect. **`connect_components!(&mut comp1, &mut comp2, n)`** is how we do this, with `n` being the index of the output from `comp1`.
+
+If `comp2` is a combiner, we have the same problem on the opposite side, where we need to define which input of the combiner we are connecting to. In this case we still use **`connect_components!(&mut comp1, &mut comp2, n)`** but `n` refers to the index of the input for `comp2`.
+
+**`connect_logger!(&mut logger, &mut comp)`** connects a logger to a component. This means that the logger is notified any time the component emits a log from the associated output port. All pre-built QuokkaSim components only have a single output port, though it is possible to create components with multiple ports, with each serving a different purpose.
+
+**`register_component!(sim_init, comp)`** is used to add the instantiated component to the simulation model. This call passes ownership of the component to the `SimInit` instance. Due to some subtleties of the `SimInit` struct, a call to this macro also takes ownership of `SimInit`, and thus must also return `SimInit`. This means usage should always look like this:
+```rust
+sim_builder = register_component!(sim_builder, process);
+```
+
+**`create_scheduled_event!`** creates an event in the global `Scheduler`, which will be triggered at the provided time (this time must be in the future of the current simulation time).
+
+{{#quiz ./chapter_3_macro_quiz.toml}}
 
 ## 3.2. Model Assembly
 

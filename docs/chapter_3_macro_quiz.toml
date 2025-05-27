@@ -1,0 +1,27 @@
+[[questions]]
+type = "MultipleChoice"
+prompt.prompt = """
+What does this code do?
+```rust
+connect_components!(&mut stock, &mut process);
+```
+"""
+prompt.distractors = [
+    "Allow `stock` to pull resources from `process`",
+    "Allow `stock` to push resources into `process`",
+    "Allow `process` to push resources into `stock`"
+]
+answer.answer = "Allow `process` to pull resources from `stock`"
+context = "The flow of resources is from the first to second argument, meaning either `stock` pushes or `process` pulls. Stocks are passive and processes are active, so `process` pulling resources in is a more accurate description."
+id = "fbb641a5-72de-4574-b816-33a0c706b728"
+
+[[questions]]
+type = "MultipleChoice"
+prompt.prompt = "Which is a valid call to `connect_logger`?"
+prompt.distractors = [
+    "`connect_logger!(logger, process);`",
+    "`connect_logger!(logger, &mut process);`",
+]
+answer.answer = "`connect_logger!(&mut logger, &mut process)`"
+id = "79e110b9-7538-42dc-9ff1-47416ea4f050"
+context = "`connect_logger!` takes a mutable reference to both `logger` and `process` to set up the connection, instead of taking ownership."

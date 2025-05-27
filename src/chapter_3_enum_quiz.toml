@@ -1,0 +1,22 @@
+[[questions]]
+type = "MultipleChoice"
+prompt.prompt = "Which enum must contain all Processes and Stocks to be used in the model?"
+prompt.distractors = [
+    "ComponentModelAddress",
+    "ComponentLogger",
+    "ScheduledEvent"
+]
+answer.answer = "ComponentModel"
+answer.answerIndex = 0
+id = "17e96e10-fa47-4f69-9d65-63e8ece13ba3"
+
+[[questions]]
+type = "MultipleChoice"
+prompt.prompt = "After creating a struct for a custom component, what else needs to happen in `define_model_enums!` to allow it to be used within QuokkaSim?"
+prompt.distractors = [
+    "Manually adding a new variant to `ComponentModelAddress`"
+]
+answer.answer = ["Manually adding a new variant to `ComponentModel`", "Manually adding a new variant to `ComponentLogger`"]
+id = "6428c2ce-e43a-4e10-bfac-e54b4857f57c"
+answer.answerIndex = 0
+context = "Components need to be registered in `ComponentModel`, but this automatically creates a corresponding variant in `ComponentModelAddress`. You will also likely want to view logs from the new component, thus a new Logger will also need to be added to `ComponentLogger`."

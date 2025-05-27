@@ -183,20 +183,41 @@ use quokkasim::{define_model_enums, prelude::*};
 use std::fs::create_dir_all;
 
 define_model_enums! {
-    pub enum ComponentModel&lt;'a&gt; {}
-    pub enum ComponentLogger&lt;'a&gt; {}
+    pub enum ComponentModel {}
+    pub enum ComponentModelAddress {}
+    pub enum ComponentLogger {}
+    pub enum ScheduledEvent {}
 }
 
-impl&lt;'a&gt; CustomComponentConnection for ComponentModel&lt;'a&gt; {
-    fn connect_components(a: Self, b: Self) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
-        Err(format!("connect_components not implemented from {} to {}", a, b).into())
+impl CustomComponentConnection for ComponentModel {
+    fn connect_components(a: &amp;mut Self, b: &amp;mut Self, n: Option&lt;usize&gt;) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+        match (a, b) {
+            (a, b) =&gt; Err(format!("No component connection defined from {} to {} (n={:?})", a, b, n).into()),
+        }
     }
 }
 
-impl&lt;'a&gt; CustomLoggerConnection&lt;'a&gt; for ComponentLogger&lt;'a&gt; {
-    type ComponentType = ComponentModel&lt;'a&gt;;
-    fn connect_logger(a: Self, b: Self::ComponentType) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
-        Err(format!("connect_logger not implemented from {} to {}", a, b).into())
+impl CustomLoggerConnection for ComponentLogger { 
+    type ComponentType = ComponentModel;
+    fn connect_logger(a: &amp;mut Self, b: &amp;mut Self::ComponentType, n: Option&lt;usize&gt;) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+        match (a, b, n) {
+            (a, b, _) =&gt; Err(format!("No logger connection defined from {} to {} (n={:?})", a, b, n).into()),
+        }
+    }
+}
+
+impl CustomInit for ComponentModelAddress {
+    fn initialise(&amp;mut self, simu: &amp;mut Simulation) -&gt; Result&lt;(), ExecutionError&gt; {
+        let notif_meta = NotificationMetadata {
+            time: simu.time(),
+            element_from: "Init".into(),
+            message: "Start".into(),
+        };
+        match self {
+            _ =&gt; {
+                Err(ExecutionError::BadQuery)
+            }
+        }
     }
 }
 <span class="boring">}</span></code></pre></pre>
@@ -205,84 +226,69 @@ impl&lt;'a&gt; CustomLoggerConnection&lt;'a&gt; for ComponentLogger&lt;'a&gt; {
 <p><code>Stock1</code> hold some quantity of material, which <code>Process1</code> moves at specific times, into <code>Stock2</code>. Add the following into the <code>main()</code> function to create these components, and to connect them together.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    let mut stock1 = VectorStock::&lt;f64&gt;::new()
-        .with_name("Stock1".to_string())
-        .with_low_capacity(5.)
-        .with_max_capacity(30.)
-        .with_initial_vector(30.);
-    let stock1_mbox = Mailbox::new();
-    let mut stock1_addr: Address&lt;VectorStock&lt;f64&gt;&gt; = stock1_mbox.address();
-    
-    let mut process1 = VectorProcess::&lt;f64, f64, f64&gt;::new()
-        .with_name("Process1".to_string())
-        .with_process_quantity_distr(Distribution::Constant(12.))
-        .with_process_time_distr(Distribution::Constant(3.));
-    let process_mbox = Mailbox::new();
-    let mut process_addr: Address&lt;VectorProcess&lt;f64, f64, f64&gt;&gt; = process_mbox.address();
+</span>    let mut stock1 = ComponentModel::VectorStockF64(
+        VectorStock::new()
+            .with_name("Stock1".to_string())
+            .with_low_capacity(5.)
+            .with_max_capacity(30.)
+            .with_initial_vector(30.),
+        Mailbox::new()
+    );
 
-    let mut stock2 = VectorStock::&lt;f64&gt;::new()
-        .with_name("Stock2".to_string())
-        .with_low_capacity(15.)
-        .with_max_capacity(30.)
-        .with_initial_vector(0.);
-    let stock2_mbox = Mailbox::new();
-    let mut stock2_addr: Address&lt;VectorStock&lt;f64&gt;&gt; = stock2_mbox.address();
-    
-    ComponentModel::connect_components(
-        ComponentModel::VectorStockF64(&amp;mut stock1, &amp;mut stock1_addr),
-        ComponentModel::VectorProcessF64(&amp;mut process1, &amp;mut process_addr)
-    ).unwrap();
-    ComponentModel::connect_components(
-        ComponentModel::VectorProcessF64(&amp;mut process1, &amp;mut process_addr),
-        ComponentModel::VectorStockF64(&amp;mut stock2, &amp;mut stock2_addr)
-    ).unwrap();
+    let mut process1 = ComponentModel::VectorProcessF64(
+        VectorProcess::new()
+            .with_name("Process1".to_string())
+            .with_process_quantity_distr(Distribution::Constant(12.))
+            .with_process_time_distr(Distribution::Constant(3.)),
+        Mailbox::new()
+    );
+    let mut process_addr = process1.get_address();
+
+    let mut stock2 = ComponentModel::VectorStockF64(
+        VectorStock::new()
+            .with_name("Stock2".to_string())
+            .with_low_capacity(15.)
+            .with_max_capacity(30.)
+            .with_initial_vector(0.),
+        Mailbox::new()
+    );
+
+    connect_components!(&amp;mut stock1, &amp;mut process1).unwrap();
+    connect_components!(&amp;mut process1, &amp;mut stock2).unwrap();
 <span class="boring">}</span></code></pre></pre>
 <p>Next we'll add some <code>Logger</code> instances to report on what occurs during the simulation, and connect them to our Process and Stock components.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    let mut stock_logger = VectorStockLogger::&lt;f64&gt;::new("StockLogger".into());
-    let mut process_logger = VectorProcessLogger::&lt;f64&gt;::new("ProcessLogger".into());
+</span>    let mut stock_logger = ComponentLogger::VectorStockLoggerF64(VectorStockLogger::new("StockLogger".into()));
+    let mut process_logger = ComponentLogger::VectorProcessLoggerF64(VectorProcessLogger::new("ProcessLogger".into()));
 
-    ComponentLogger::connect_logger(
-        ComponentLogger::VectorStockLoggerF64(&amp;mut stock_logger),
-        ComponentModel::VectorStockF64(&amp;mut stock1, &amp;mut stock1_addr)
-    ).unwrap();
-    ComponentLogger::connect_logger(
-        ComponentLogger::VectorStockLoggerF64(&amp;mut stock_logger),
-        ComponentModel::VectorStockF64(&amp;mut stock2, &amp;mut stock2_addr)
-    ).unwrap();
-    ComponentLogger::connect_logger(
-        ComponentLogger::VectorProcessLoggerF64(&amp;mut process_logger),
-        ComponentModel::VectorProcessF64(&amp;mut process1, &amp;mut process_addr)
-    ).unwrap();
+    connect_logger!(&amp;mut stock_logger, &amp;mut stock1).unwrap();
+    connect_logger!(&amp;mut stock_logger, &amp;mut stock2).unwrap();
+    connect_logger!(&amp;mut process_logger, &amp;mut process1).unwrap();
 <span class="boring">}</span></code></pre></pre>
 <p>Then we create our <code>Simulation</code> object <code>sim</code>, which controls the progression of the simulation.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    let sim_builder = SimInit::new()
-        .add_model(stock1, stock1_mbox, "Stock1")
-        .add_model(process1, process_mbox, "Process1")
-        .add_model(stock2, stock2_mbox, "Stock2");
+</span>    let mut sim_builder = SimInit::new();
+    sim_builder = register_component!(sim_builder, stock1);
+    sim_builder = register_component!(sim_builder, process1);
+    sim_builder = register_component!(sim_builder, stock2);
 
     let start_time = MonotonicTime::EPOCH;
-    let mut sim = sim_builder.init(MonotonicTime::EPOCH).unwrap().0;
+    let mut simu = sim_builder.init(MonotonicTime::EPOCH).unwrap().0;
 <span class="boring">}</span></code></pre></pre>
 <p>We send and initialisation events, tell our simulation to run for an hour, and write the resulting logs to CSV files.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    sim.process_event(VectorProcess::update_state, NotificationMetadata {
-        element_from: "Init".into(),
-        time: start_time.clone(),
-        message: "Init".into()
-    }, &amp;process_addr).unwrap();
-    
-    let end_time = start_time + Duration::from_secs(3600);
-    sim.step_until(end_time).unwrap();
+</span>    process_addr.initialise(&amp;mut simu).unwrap();
 
-    let output_dir = "outputs/example_0".to_string();
+    let end_time = start_time + Duration::from_secs(3600);
+    simu.step_until(end_time).unwrap();
+
+    let output_dir = "outputs/example_0";
     create_dir_all(&amp;output_dir).unwrap();
-    process_logger.write_csv(output_dir.clone()).unwrap();
-    stock_logger.write_csv(output_dir.clone()).unwrap();
+    process_logger.write_csv(output_dir).unwrap();
+    stock_logger.write_csv(output_dir).unwrap();
 <span class="boring">}</span></code></pre></pre>
 <p>Our <code>main.rs</code> file is now complete (or refer to the Full Code below if you think you're missing something).</p>
 <p>Use <code>cargo run</code> to run the simulation, and we have our logs in the <code>outputs/example_0</code> directory!</p>
@@ -293,20 +299,41 @@ use quokkasim::{define_model_enums, prelude::*};
 use std::fs::create_dir_all;
 
 define_model_enums! {
-    pub enum ComponentModel&lt;'a&gt; {}
-    pub enum ComponentLogger&lt;'a&gt; {}
+    pub enum ComponentModel {}
+    pub enum ComponentModelAddress {}
+    pub enum ComponentLogger {}
+    pub enum ScheduledEvent {}
 }
 
-impl&lt;'a&gt; CustomComponentConnection for ComponentModel&lt;'a&gt; {
-    fn connect_components(a: Self, b: Self) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
-        Err(format!("connect_components not implemented from {} to {}", a, b).into())
+impl CustomComponentConnection for ComponentModel {
+    fn connect_components(a: &amp;mut Self, b: &amp;mut Self, n: Option&lt;usize&gt;) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+        match (a, b) {
+            (a, b) =&gt; Err(format!("No component connection defined from {} to {} (n={:?})", a, b, n).into()),
+        }
     }
 }
 
-impl&lt;'a&gt; CustomLoggerConnection&lt;'a&gt; for ComponentLogger&lt;'a&gt; {
-    type ComponentType = ComponentModel&lt;'a&gt;;
-    fn connect_logger(a: Self, b: Self::ComponentType) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
-        Err(format!("connect_logger not implemented from {} to {}", a, b).into())
+impl CustomLoggerConnection for ComponentLogger { 
+    type ComponentType = ComponentModel;
+    fn connect_logger(a: &amp;mut Self, b: &amp;mut Self::ComponentType, n: Option&lt;usize&gt;) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+        match (a, b, n) {
+            (a, b, _) =&gt; Err(format!("No logger connection defined from {} to {} (n={:?})", a, b, n).into()),
+        }
+    }
+}
+
+impl CustomInit for ComponentModelAddress {
+    fn initialise(&amp;mut self, simu: &amp;mut Simulation) -&gt; Result&lt;(), ExecutionError&gt; {
+        let notif_meta = NotificationMetadata {
+            time: simu.time(),
+            element_from: "Init".into(),
+            message: "Start".into(),
+        };
+        match self {
+            _ =&gt; {
+                Err(ExecutionError::BadQuery)
+            }
+        }
     }
 }
 
@@ -315,84 +342,69 @@ fn main() {
     /*
      * Create components
      */
-    let mut stock1 = VectorStock::&lt;f64&gt;::new()
-        .with_name("Stock1".to_string())
-        .with_low_capacity(5.)
-        .with_max_capacity(30.)
-        .with_initial_vector(30.);
-    let stock1_mbox = Mailbox::new();
-    let mut stock1_addr: Address&lt;VectorStock&lt;f64&gt;&gt; = stock1_mbox.address();
-    
-    let mut process1 = VectorProcess::&lt;f64, f64, f64&gt;::new()
-        .with_name("Process1".to_string())
-        .with_process_quantity_distr(Distribution::Constant(12.))
-        .with_process_time_distr(Distribution::Constant(3.));
-    let process_mbox = Mailbox::new();
-    let mut process_addr: Address&lt;VectorProcess&lt;f64, f64, f64&gt;&gt; = process_mbox.address();
+    let mut stock1 = ComponentModel::VectorStockF64(
+        VectorStock::new()
+            .with_name("Stock1".to_string())
+            .with_low_capacity(5.)
+            .with_max_capacity(30.)
+            .with_initial_vector(30.),
+        Mailbox::new()
+    );
 
-    let mut stock2 = VectorStock::&lt;f64&gt;::new()
-        .with_name("Stock2".to_string())
-        .with_low_capacity(15.)
-        .with_max_capacity(30.)
-        .with_initial_vector(0.);
-    let stock2_mbox = Mailbox::new();
-    let mut stock2_addr: Address&lt;VectorStock&lt;f64&gt;&gt; = stock2_mbox.address();
-    
-    ComponentModel::connect_components(
-        ComponentModel::VectorStockF64(&amp;mut stock1, &amp;mut stock1_addr),
-        ComponentModel::VectorProcessF64(&amp;mut process1, &amp;mut process_addr)
-    ).unwrap();
-    ComponentModel::connect_components(
-        ComponentModel::VectorProcessF64(&amp;mut process1, &amp;mut process_addr),
-        ComponentModel::VectorStockF64(&amp;mut stock2, &amp;mut stock2_addr)
-    ).unwrap();
-    
+    let mut process1 = ComponentModel::VectorProcessF64(
+        VectorProcess::new()
+            .with_name("Process1".to_string())
+            .with_process_quantity_distr(Distribution::Constant(12.))
+            .with_process_time_distr(Distribution::Constant(3.)),
+        Mailbox::new()
+    );
+    let mut process_addr = process1.get_address();
+
+    let mut stock2 = ComponentModel::VectorStockF64(
+        VectorStock::new()
+            .with_name("Stock2".to_string())
+            .with_low_capacity(15.)
+            .with_max_capacity(30.)
+            .with_initial_vector(0.),
+        Mailbox::new()
+    );
+
+    connect_components!(&amp;mut stock1, &amp;mut process1).unwrap();
+    connect_components!(&amp;mut process1, &amp;mut stock2).unwrap();
+
     /*
      * Create loggers
      */
-    let mut stock_logger = VectorStockLogger::&lt;f64&gt;::new("StockLogger".into());
-    let mut process_logger = VectorProcessLogger::&lt;f64&gt;::new("ProcessLogger".into());
+    let mut stock_logger = ComponentLogger::VectorStockLoggerF64(VectorStockLogger::new("StockLogger".into()));
+    let mut process_logger = ComponentLogger::VectorProcessLoggerF64(VectorProcessLogger::new("ProcessLogger".into()));
 
-    ComponentLogger::connect_logger(
-        ComponentLogger::VectorStockLoggerF64(&amp;mut stock_logger),
-        ComponentModel::VectorStockF64(&amp;mut stock1, &amp;mut stock1_addr)
-    ).unwrap();
-    ComponentLogger::connect_logger(
-        ComponentLogger::VectorStockLoggerF64(&amp;mut stock_logger),
-        ComponentModel::VectorStockF64(&amp;mut stock2, &amp;mut stock2_addr)
-    ).unwrap();
-    ComponentLogger::connect_logger(
-        ComponentLogger::VectorProcessLoggerF64(&amp;mut process_logger),
-        ComponentModel::VectorProcessF64(&amp;mut process1, &amp;mut process_addr)
-    ).unwrap();
+    connect_logger!(&amp;mut stock_logger, &amp;mut stock1).unwrap();
+    connect_logger!(&amp;mut stock_logger, &amp;mut stock2).unwrap();
+    connect_logger!(&amp;mut process_logger, &amp;mut process1).unwrap();
 
     /*
      * Build simulation
      */
-    let sim_builder = SimInit::new()
-        .add_model(stock1, stock1_mbox, "Stock1")
-        .add_model(process1, process_mbox, "Process1")
-        .add_model(stock2, stock2_mbox, "Stock2");
+    let mut sim_builder = SimInit::new();
+    sim_builder = register_component!(sim_builder, stock1);
+    sim_builder = register_component!(sim_builder, process1);
+    sim_builder = register_component!(sim_builder, stock2);
 
     let start_time = MonotonicTime::EPOCH;
-    let mut sim = sim_builder.init(MonotonicTime::EPOCH).unwrap().0;
+    let mut simu = sim_builder.init(MonotonicTime::EPOCH).unwrap().0;
 
     /*
      * Run simulation
      */
-    sim.process_event(VectorProcess::update_state, NotificationMetadata {
-        element_from: "Init".into(),
-        time: start_time.clone(),
-        message: "Init".into()
-    }, &amp;process_addr).unwrap();
-    
-    let end_time = start_time + Duration::from_secs(3600);
-    sim.step_until(end_time).unwrap();
+    process_addr.initialise(&amp;mut simu).unwrap();
 
-    let output_dir = "outputs/example_0".to_string();
+    let end_time = start_time + Duration::from_secs(3600);
+    simu.step_until(end_time).unwrap();
+
+    let output_dir = "outputs/example_0";
     create_dir_all(&amp;output_dir).unwrap();
-    process_logger.write_csv(output_dir.clone()).unwrap();
-    stock_logger.write_csv(output_dir.clone()).unwrap();
+    process_logger.write_csv(output_dir).unwrap();
+    stock_logger.write_csv(output_dir).unwrap();
 }</code></pre></pre>
 
                     </main>
