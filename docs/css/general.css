@@ -283,6 +283,8 @@ sup {
 
 .badge-container {
     line-height: 3rem;
+    min-width: 40%;
+    white-space: normal;
 }
 .badge {
     background-color: var(--badge-bg);
@@ -291,4 +293,5 @@ sup {
     text-align: center;
     border-radius: 20px;
     font-size: small;
+    white-space: nowrap;
 }

@@ -158,14 +158,36 @@
                         <h1 id="the-quokkasim-book"><a class="header" href="#the-quokkasim-book">The QuokkaSim Book</a></h1>
 <p>Welcome to the <strong>QuokkaSim Book</strong> – your guide to learning and mastering QuokkaSim, the Rust-based discrete-event simulation framework.</p>
 <blockquote>
-<p><strong>Note:</strong><br />
-QuokkaSim is under <strong>very active</strong> development. Let JJ know if:</p>
+<p>As of the <strong>8th June 2025</strong>, QuokkaSim is at version <code>0.1.0</code> and is under <strong>very active</strong> development. JJ is currently looking for feedback on:</p>
 <ul>
-<li>You find mistakes, typos or missing information</li>
-<li>You have ideas to contribute, or want to contribute in a more hands-on capacity</li>
-<li>You're unsure if QuokkaSim is suitable for your use case. If it's not, let's discuss how it can be!</li>
+<li>Your experiencing learning QuokkaSim, no matter your prior experience
+<ul>
+<li>Are the main concepts (Resource, Stocks, Processes, Loggers etc.) intuitive?
+- Is it easy to map real-world scenarios into the above concepts?</li>
+<li>Are the tutorials here and examples in the repository easy to follow?</li>
+<li>Are you having to fight the Rust compiler? If yes, what kind type of issues are you facing? A quick onboarding to Rust is within the scope of what I would like this guide to cover</li>
+<li>Is it easy to know how to implement model features you have in mind? This is also within the scope of what I would like this guide to cover (at least briefly)</li>
+<li>How is the model debugging process with logged events? Is the provided logging sufficient to help debug issues, or are you having to dive deeper?</li>
 </ul>
-<p>If you are reading this, you probably already know how to contact me 😉 - JJ</p>
+</li>
+<li>Pain points whilst developing
+<ul>
+<li>Are compiler and runtime errors informative enough to debug easily?</li>
+<li>What is tedious and repetitive? Future releases will have utilities to reduce repetition and boilerplate</li>
+</ul>
+</li>
+<li>Bugs and issues
+<ul>
+<li>Unsure if you've found a bug? Let me know anyway! Even if it's not a bug, it may be something unintuitive or unclearly documented, which I am interested in improving</li>
+<li>Unsure about things in general? Let me know anyway! Your uncertainty may be a great prompt for content to include in the FAQ or other areas of the documentation or book</li>
+</ul>
+</li>
+<li>Use cases
+<ul>
+<li>Let's chat if you think you have a use case for QuokkaSim, or if you need any help with mapping your use case into QuokkaSim! I want the modelling process to be as easy as possible - and that includes mapping from a real-world scenario, into a runnable model.</li>
+</ul>
+</li>
+</ul>
 </blockquote>
 <hr />
 <h2 id="what-is-quokkasim"><a class="header" href="#what-is-quokkasim">What is QuokkaSim?</a></h2>
@@ -173,30 +195,44 @@ QuokkaSim is under <strong>very active</strong> development. Let JJ know if:</p>
 <p>QuokkaSim is also:</p>
 <ul>
 <li>Open source</li>
-<li>Permissively licensed (MIT License)</li>
+<li>Permissively licensed (via the MIT License)</li>
 <li>Memory-safe</li>
 <li>Highly performant, via the NeXosim crate</li>
 <li>Accessible to new simulation modellers and new Rust developers</li>
 </ul>
 <hr />
 <h2 id="who-should-read-this-book"><a class="header" href="#who-should-read-this-book">Who should read this book?</a></h2>
-<p>This book is written for:</p>
-<ol>
-<li>You</li>
-<li>Some other people too</li>
-</ol>
+<p>This book is written primarily for new and experienced simulation modellers, who are new to the Rust programming language and NeXosim simulation engine. The aim of this book (and QuokkaSim more generally) is to provide a structured way to learn QuokkaSim with as minimal friction as possible with the Rust compiler.</p>
+<p>For new simulation modellers:</p>
+<ul>
+<li><a href="chapter_1.html">Chapter 1: Getting Started</a> is a Quick Start Guide to running and modifying your first QuokkaSim model.</li>
+<li><a href="chapter_2.html">Chapter 2: A Conceptual Overview</a> explores the specific concepts used by QuokkaSim, with the aim of new users being able to map real-world scenarios into QuokkaSim concepts, even before touching the code.</li>
+<li><a href="chapter_3.html">Chapter 3: Building Your Simulation Model</a> dives into the code, guiding you through how to navigate parsing through an example simulation, and building your own.</li>
+<li><a href="examples.html">Chapter 4: Examples</a> summarises a number of example QuokkaSim models, which can be referenced for how to implement different types of custom logic and features.</li>
+</ul>
 <hr />
 <h2 id="faq"><a class="header" href="#faq">FAQ</a></h2>
 <p><strong>Why does QuokkaSim use Rust?</strong></p>
 <ul>
-<li>Building QuokkaSim in Rust means:
+<li>
+<p>Incredible performance without the need to write plain C code</p>
 <ul>
-<li>QuokkaSim can be free and open source under the MIT License.</li>
-<li>QuokkaSim is highly performant (thanks to the <a href="https://github.com/asynchronics/nexosim">NeXosim</a> library).</li>
-<li>Simulations built in QuokkaSim can benefit from the type safety, memory safety, and explicit error handling that is fundamental to Rust. This strictness minimises issues that arise as a simulation model scales and increases in complexity.</li>
+<li>Rust's performance is comparable to that of C in many benchmarks of the <a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/index.html">CLBG</a></li>
+<li>Rust performs ~2.5× faster than Java, at ~1/6× the memory consumption (<a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/nbody.html">1</a>, <a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/spectralnorm.html">2</a>, <a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/spectralnorm.html">3</a>)</li>
+<li>Rust performs ~100× faster than Python, at ~1/8× the memory consumption (<a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/nbody.html">1</a>, <a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/spectralnorm.html">2</a>, <a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/spectralnorm.html">3</a>)</li>
 </ul>
 </li>
+<li>
+<p>Building with Rust means we can make QuokkaSim free, open source and permissively licensed, to <a href="https://en.wikipedia.org/wiki/Democratization_of_technology">democratise</a> simulation software - making world-class simulation modelling accessible beyond those with licenses to proprietary software.</p>
+</li>
+<li>
+<p>Rust's strict compiler ensures all possible cases are explicitly handled and enforces the principle of making impossible states unrepresentable. This aligns perfectly with simulation modeling, where defining clear rules and handling unforeseen edge cases is crucial for reliable extrapolation beyond empirical data and known behaviours.</p>
+</li>
+<li>
+<p>Rust is the world's <a href="https://survey.stackoverflow.co/2024/technology#admired-and-desired-language-desire-admire">most admired programming language</a>, and has <a href="https://github.blog/developer-skills/programming-languages-and-frameworks/why-rust-is-the-most-admired-language-among-developers/">maintained this status for the last 8 years</a></p>
+</li>
 </ul>
+<p><strong>Yes, this FAQ is bare. Please let JJ know if you have any questions - I'd like to add more to this section!</strong></p>
 
                     </main>
 

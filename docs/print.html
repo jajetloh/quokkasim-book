@@ -159,14 +159,36 @@
                         <h1 id="the-quokkasim-book"><a class="header" href="#the-quokkasim-book">The QuokkaSim Book</a></h1>
 <p>Welcome to the <strong>QuokkaSim Book</strong> – your guide to learning and mastering QuokkaSim, the Rust-based discrete-event simulation framework.</p>
 <blockquote>
-<p><strong>Note:</strong><br />
-QuokkaSim is under <strong>very active</strong> development. Let JJ know if:</p>
+<p>As of the <strong>8th June 2025</strong>, QuokkaSim is at version <code>0.1.0</code> and is under <strong>very active</strong> development. JJ is currently looking for feedback on:</p>
 <ul>
-<li>You find mistakes, typos or missing information</li>
-<li>You have ideas to contribute, or want to contribute in a more hands-on capacity</li>
-<li>You're unsure if QuokkaSim is suitable for your use case. If it's not, let's discuss how it can be!</li>
+<li>Your experiencing learning QuokkaSim, no matter your prior experience
+<ul>
+<li>Are the main concepts (Resource, Stocks, Processes, Loggers etc.) intuitive?
+- Is it easy to map real-world scenarios into the above concepts?</li>
+<li>Are the tutorials here and examples in the repository easy to follow?</li>
+<li>Are you having to fight the Rust compiler? If yes, what kind type of issues are you facing? A quick onboarding to Rust is within the scope of what I would like this guide to cover</li>
+<li>Is it easy to know how to implement model features you have in mind? This is also within the scope of what I would like this guide to cover (at least briefly)</li>
+<li>How is the model debugging process with logged events? Is the provided logging sufficient to help debug issues, or are you having to dive deeper?</li>
 </ul>
-<p>If you are reading this, you probably already know how to contact me 😉 - JJ</p>
+</li>
+<li>Pain points whilst developing
+<ul>
+<li>Are compiler and runtime errors informative enough to debug easily?</li>
+<li>What is tedious and repetitive? Future releases will have utilities to reduce repetition and boilerplate</li>
+</ul>
+</li>
+<li>Bugs and issues
+<ul>
+<li>Unsure if you've found a bug? Let me know anyway! Even if it's not a bug, it may be something unintuitive or unclearly documented, which I am interested in improving</li>
+<li>Unsure about things in general? Let me know anyway! Your uncertainty may be a great prompt for content to include in the FAQ or other areas of the documentation or book</li>
+</ul>
+</li>
+<li>Use cases
+<ul>
+<li>Let's chat if you think you have a use case for QuokkaSim, or if you need any help with mapping your use case into QuokkaSim! I want the modelling process to be as easy as possible - and that includes mapping from a real-world scenario, into a runnable model.</li>
+</ul>
+</li>
+</ul>
 </blockquote>
 <hr />
 <h2 id="what-is-quokkasim"><a class="header" href="#what-is-quokkasim">What is QuokkaSim?</a></h2>
@@ -174,62 +196,83 @@ QuokkaSim is under <strong>very active</strong> development. Let JJ know if:</p>
 <p>QuokkaSim is also:</p>
 <ul>
 <li>Open source</li>
-<li>Permissively licensed (MIT License)</li>
+<li>Permissively licensed (via the MIT License)</li>
 <li>Memory-safe</li>
 <li>Highly performant, via the NeXosim crate</li>
 <li>Accessible to new simulation modellers and new Rust developers</li>
 </ul>
 <hr />
 <h2 id="who-should-read-this-book"><a class="header" href="#who-should-read-this-book">Who should read this book?</a></h2>
-<p>This book is written for:</p>
-<ol>
-<li>You</li>
-<li>Some other people too</li>
-</ol>
+<p>This book is written primarily for new and experienced simulation modellers, who are new to the Rust programming language and NeXosim simulation engine. The aim of this book (and QuokkaSim more generally) is to provide a structured way to learn QuokkaSim with as minimal friction as possible with the Rust compiler.</p>
+<p>For new simulation modellers:</p>
+<ul>
+<li><a href="chapter_1.html">Chapter 1: Getting Started</a> is a Quick Start Guide to running and modifying your first QuokkaSim model.</li>
+<li><a href="chapter_2.html">Chapter 2: A Conceptual Overview</a> explores the specific concepts used by QuokkaSim, with the aim of new users being able to map real-world scenarios into QuokkaSim concepts, even before touching the code.</li>
+<li><a href="chapter_3.html">Chapter 3: Building Your Simulation Model</a> dives into the code, guiding you through how to navigate parsing through an example simulation, and building your own.</li>
+<li><a href="examples.html">Chapter 4: Examples</a> summarises a number of example QuokkaSim models, which can be referenced for how to implement different types of custom logic and features.</li>
+</ul>
 <hr />
 <h2 id="faq"><a class="header" href="#faq">FAQ</a></h2>
 <p><strong>Why does QuokkaSim use Rust?</strong></p>
 <ul>
-<li>Building QuokkaSim in Rust means:
+<li>
+<p>Incredible performance without the need to write plain C code</p>
 <ul>
-<li>QuokkaSim can be free and open source under the MIT License.</li>
-<li>QuokkaSim is highly performant (thanks to the <a href="https://github.com/asynchronics/nexosim">NeXosim</a> library).</li>
-<li>Simulations built in QuokkaSim can benefit from the type safety, memory safety, and explicit error handling that is fundamental to Rust. This strictness minimises issues that arise as a simulation model scales and increases in complexity.</li>
+<li>Rust's performance is comparable to that of C in many benchmarks of the <a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/index.html">CLBG</a></li>
+<li>Rust performs ~2.5× faster than Java, at ~1/6× the memory consumption (<a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/nbody.html">1</a>, <a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/spectralnorm.html">2</a>, <a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/spectralnorm.html">3</a>)</li>
+<li>Rust performs ~100× faster than Python, at ~1/8× the memory consumption (<a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/nbody.html">1</a>, <a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/spectralnorm.html">2</a>, <a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/spectralnorm.html">3</a>)</li>
 </ul>
 </li>
+<li>
+<p>Building with Rust means we can make QuokkaSim free, open source and permissively licensed, to <a href="https://en.wikipedia.org/wiki/Democratization_of_technology">democratise</a> simulation software - making world-class simulation modelling accessible beyond those with licenses to proprietary software.</p>
+</li>
+<li>
+<p>Rust's strict compiler ensures all possible cases are explicitly handled and enforces the principle of making impossible states unrepresentable. This aligns perfectly with simulation modeling, where defining clear rules and handling unforeseen edge cases is crucial for reliable extrapolation beyond empirical data and known behaviours.</p>
+</li>
+<li>
+<p>Rust is the world's <a href="https://survey.stackoverflow.co/2024/technology#admired-and-desired-language-desire-admire">most admired programming language</a>, and has <a href="https://github.blog/developer-skills/programming-languages-and-frameworks/why-rust-is-the-most-admired-language-among-developers/">maintained this status for the last 8 years</a></p>
+</li>
 </ul>
+<p><strong>Yes, this FAQ is bare. Please let JJ know if you have any questions - I'd like to add more to this section!</strong></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-1-getting-started"><a class="header" href="#chapter-1-getting-started">Chapter 1: Getting Started</a></h1>
 <p>Welcome to your first QuokkaSim simulation! In this chapter you will</p>
 <ol>
+<li>Install Rust</li>
 <li>Create a new Rust project</li>
 <li>Add QuokkaSim as a dependency</li>
 <li>Write and run a minimal "hello world" simulation</li>
 </ol>
 <hr />
-<h2 id="11-create-a-new-rust-project"><a class="header" href="#11-create-a-new-rust-project">1.1. Create a new Rust project</a></h2>
+<h2 id="11-install-rust"><a class="header" href="#11-install-rust">1.1. Install Rust</a></h2>
+<p>Follow the instructs on the <a href="https://www.rust-lang.org/tools/install">Rust Lang website</a> to install Rust on your operating system. These instructions will help you install:</p>
+<ul>
+<li><code>rustup</code>, the Rust installer, and</li>
+<li><code>cargo</code>, the Rust package manager</li>
+</ul>
+<p>To check if installation is successful, use <code>cargo -V</code> to check which version of Cargo you have installed.</p>
+<h2 id="12-create-a-new-rust-project"><a class="header" href="#12-create-a-new-rust-project">1.2. Create a new Rust project</a></h2>
 <p>If you don’t already have a project, open a terminal and run:</p>
 <pre><code class="language-bash">cargo new hello‐quokkasim
 cd hello‐quokkasim
 </code></pre>
 <p>This creates a fresh binary crate with <code>src/main.rs</code>.</p>
-<h2 id="12-add-quokkasim-to-cargotoml"><a class="header" href="#12-add-quokkasim-to-cargotoml">1.2. Add QuokkaSim to Cargo.toml</a></h2>
+<h2 id="13-add-quokkasim-to-cargotoml"><a class="header" href="#13-add-quokkasim-to-cargotoml">1.3. Add QuokkaSim to Cargo.toml</a></h2>
 <p>To add QuokkaSim as a dependency, use <code>cargo add quokkasim</code> or add the following to your <code>Cargo.toml</code> file before running <code>cargo fetch</code>:</p>
 <pre><code class="language-toml">[dependencies]
-quokkasim = "0.0.1"
+quokkasim = "0.1.0"
 </code></pre>
-<h2 id="13-write-your-first-simulation"><a class="header" href="#13-write-your-first-simulation">1.3. Write your first Simulation</a></h2>
+<h2 id="14-write-your-first-simulation"><a class="header" href="#14-write-your-first-simulation">1.4. Write your first Simulation</a></h2>
 <p>In your <code>main.rs</code> file, paste in the following code at the top. This imports the required objects, and also creates our <code>ComponentModel</code> and <code>ComponentLogger</code> enums, which we will learn about later.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use std::{error::Error, time::Duration};
-use quokkasim::{define_model_enums, prelude::*}; 
-use std::fs::create_dir_all;
+</span>use std::{error::Error, fs::create_dir_all, time::Duration};
+use quokkasim::{define_model_enums, prelude::*};
 
 define_model_enums! {
     pub enum ComponentModel {}
     pub enum ComponentModelAddress {}
     pub enum ComponentLogger {}
-    pub enum ScheduledEvent {}
+    pub enum ScheduledEventConfig {}
 }
 
 impl CustomComponentConnection for ComponentModel {
@@ -245,107 +288,124 @@ impl CustomLoggerConnection for ComponentLogger {
     fn connect_logger(a: &amp;mut Self, b: &amp;mut Self::ComponentType, n: Option&lt;usize&gt;) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
         match (a, b, n) {
             (a, b, _) =&gt; Err(format!("No logger connection defined from {} to {} (n={:?})", a, b, n).into()),
-        }
-    }
-}
-
-impl CustomInit for ComponentModelAddress {
-    fn initialise(&amp;mut self, simu: &amp;mut Simulation) -&gt; Result&lt;(), ExecutionError&gt; {
-        let notif_meta = NotificationMetadata {
-            time: simu.time(),
-            element_from: "Init".into(),
-            message: "Start".into(),
-        };
-        match self {
-            _ =&gt; {
-                Err(ExecutionError::BadQuery)
-            }
         }
     }
 }
 <span class="boring">}</span></code></pre></pre>
 <p>Next we create the individual interactive components of our simulation</p>
-<p align="center"><img src="images/fig-01.png" alt="Figure 1: Simulation Overview" /><p>
-<p><code>Stock1</code> hold some quantity of material, which <code>Process1</code> moves at specific times, into <code>Stock2</code>. Add the following into the <code>main()</code> function to create these components, and to connect them together.</p>
+<p align="center"><img src="images/source_sink_fig.png" alt="Figure 1: Simulation Overview" /><p>
+<p><code>Stock 1</code> hold some quantity of material, which <code>Process</code> moves at specific times, into <code>Stock 2</code>. Add the following into the <code>main()</code> function to create these components, and to connect them together.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    let mut stock1 = ComponentModel::VectorStockF64(
-        VectorStock::new()
-            .with_name("Stock1".to_string())
-            .with_low_capacity(5.)
-            .with_max_capacity(30.)
-            .with_initial_vector(30.),
+</span>    let mut source = ComponentModel::VectorSourceVector3(
+        VectorSource::new()
+            .with_name("Source".into())     // A unique, human readable name
+            .with_code("SRC".into())        // A unique code, for readable logging
+            .with_process_quantity_distr(Distribution::Constant(50.))   // Quantity of resource to create
+            .with_process_time_distr(Distribution::Constant(90.))       // Time taken to create resource
+            .with_source_vector([1., 4., 5.].into()),                   // Composition of the resource
         Mailbox::new()
     );
 
-    let mut process1 = ComponentModel::VectorProcessF64(
+    let mut stock_1 = ComponentModel::VectorStockVector3(
+        VectorStock::new()
+            .with_name("Stock 1".into())
+            .with_code("ST1".into())
+            .with_low_capacity(10.)                         // Threshold to consider the stock 'empty'
+            .with_max_capacity(100.)                        // Threshold to consider the stock 'full'
+            .with_initial_vector([40., 40., 0.].into()),    // Initial composition of the stock
+        Mailbox::new()
+    );
+    let mut process = ComponentModel::VectorProcessVector3(
         VectorProcess::new()
-            .with_name("Process1".to_string())
-            .with_process_quantity_distr(Distribution::Constant(12.))
-            .with_process_time_distr(Distribution::Constant(3.)),
+            .with_name("Process".into())
+            .with_code("PRC".into())
+            .with_process_quantity_distr(Distribution::Constant(20.))
+            .with_process_time_distr(Distribution::Constant(30.)),
         Mailbox::new()
     );
-    let mut process_addr = process1.get_address();
-
-    let mut stock2 = ComponentModel::VectorStockF64(
+    let mut stock_2 = ComponentModel::VectorStockVector3(
         VectorStock::new()
-            .with_name("Stock2".to_string())
-            .with_low_capacity(15.)
-            .with_max_capacity(30.)
-            .with_initial_vector(0.),
+            .with_name("Stock 2".into())
+            .with_code("ST2".into())
+            .with_low_capacity(10.)
+            .with_max_capacity(100.)
+            .with_initial_vector([0., 0., 0.].into()),
         Mailbox::new()
     );
 
-    connect_components!(&amp;mut stock1, &amp;mut process1).unwrap();
-    connect_components!(&amp;mut process1, &amp;mut stock2).unwrap();
+    let mut sink = ComponentModel::VectorSinkVector3(
+        VectorSink::new()
+            .with_name("Sink".into())
+            .with_code("SNK".into())
+            .with_process_quantity_distr(Distribution::Constant(16.))
+            .with_process_time_distr(Distribution::Constant(20.)),
+        Mailbox::new()
+    );
+
+    connect_components!(&amp;mut source, &amp;mut stock_1).unwrap();
+    connect_components!(&amp;mut stock_1, &amp;mut process).unwrap();
+    connect_components!(&amp;mut process, &amp;mut stock_2).unwrap();
+    connect_components!(&amp;mut stock_2, &amp;mut sink).unwrap();
 <span class="boring">}</span></code></pre></pre>
 <p>Next we'll add some <code>Logger</code> instances to report on what occurs during the simulation, and connect them to our Process and Stock components.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    let mut stock_logger = ComponentLogger::VectorStockLoggerF64(VectorStockLogger::new("StockLogger".into()));
-    let mut process_logger = ComponentLogger::VectorProcessLoggerF64(VectorProcessLogger::new("ProcessLogger".into()));
+</span>    let mut process_logger = ComponentLogger::VectorProcessLoggerVector3(VectorProcessLogger::new("ProcessLogger".into()));
+    let mut stock_logger = ComponentLogger::VectorStockLoggerVector3(VectorStockLogger::new("StockLogger".into()));
 
-    connect_logger!(&amp;mut stock_logger, &amp;mut stock1).unwrap();
-    connect_logger!(&amp;mut stock_logger, &amp;mut stock2).unwrap();
-    connect_logger!(&amp;mut process_logger, &amp;mut process1).unwrap();
+    connect_logger!(&amp;mut process_logger, &amp;mut source).unwrap();
+    connect_logger!(&amp;mut process_logger, &amp;mut process).unwrap();
+    connect_logger!(&amp;mut process_logger, &amp;mut sink).unwrap();
+    connect_logger!(&amp;mut stock_logger, &amp;mut stock_1).unwrap();
+    connect_logger!(&amp;mut stock_logger, &amp;mut stock_2).unwrap();
 <span class="boring">}</span></code></pre></pre>
 <p>Then we create our <code>Simulation</code> object <code>sim</code>, which controls the progression of the simulation.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>    let mut sim_builder = SimInit::new();
-    sim_builder = register_component!(sim_builder, stock1);
-    sim_builder = register_component!(sim_builder, process1);
-    sim_builder = register_component!(sim_builder, stock2);
 
-    let start_time = MonotonicTime::EPOCH;
-    let mut simu = sim_builder.init(MonotonicTime::EPOCH).unwrap().0;
+    sim_builder = register_component!(sim_builder, stock_1);
+    sim_builder = register_component!(sim_builder, stock_2);
+    sim_builder = register_component!(sim_builder, source);
+    sim_builder = register_component!(sim_builder, process);
+    sim_builder = register_component!(sim_builder, sink);
+
+    let start_time = MonotonicTime::try_from_date_time(2025, 1, 1, 0, 0, 0, 0).unwrap();
+    let mut simu = sim_builder.init(start_time).unwrap().0;
 <span class="boring">}</span></code></pre></pre>
 <p>We send and initialisation events, tell our simulation to run for an hour, and write the resulting logs to CSV files.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    process_addr.initialise(&amp;mut simu).unwrap();
+</span>    simu.step_until(start_time + Duration::from_secs(300)).unwrap();
 
-    let end_time = start_time + Duration::from_secs(3600);
-    simu.step_until(end_time).unwrap();
-
-    let output_dir = "outputs/example_0";
-    create_dir_all(&amp;output_dir).unwrap();
-    process_logger.write_csv(output_dir).unwrap();
+    let output_dir = "outputs/source_sink";
+    create_dir_all(output_dir).unwrap();
     stock_logger.write_csv(output_dir).unwrap();
+    process_logger.write_csv(output_dir).unwrap();
 <span class="boring">}</span></code></pre></pre>
 <p>Our <code>main.rs</code> file is now complete (or refer to the Full Code below if you think you're missing something).</p>
-<p>Use <code>cargo run</code> to run the simulation, and we have our logs in the <code>outputs/example_0</code> directory!</p>
+<p>Use <code>cargo run</code> to run the simulation, and we have our logs in the <code>outputs/source_sink</code> directory!</p>
+<h2 id="15-exercises"><a class="header" href="#15-exercises">1.5. Exercises</a></h2>
+<p>Want to start playing around immediately? Here are some ideas of things you can try before moving on with the rest of the book!</p>
+<ul>
+<li>5 minutes is simulated to begin with. What if we simulate for longer?</li>
+<li>The initial simulation begins with signicant stock in <code>Stock 1</code>. What happens if it starts empty?</li>
+<li>What if instead of a sink removing material from the system, we make <code>Stock 2</code> bigger and see how long it takes to fill up?</li>
+<li>What if we add an additional sink that takes directly from <code>Stock 1</code>, or an addition source that feeds directly into <code>Stock 2</code>?</li>
+<li>What if there were no source or sink, but instead an additional process from <code>Stock 2</code> into <code>Stock 1</code>?</li>
+<li>What if we want to have logs for <code>Source</code> and <code>Sink</code> save into their own log files?</li>
+</ul>
 <hr />
 <h2 id="full-code"><a class="header" href="#full-code">Full Code</a></h2>
-<pre><pre class="playground"><code class="language-rust no_run">use std::{error::Error, time::Duration};
-use quokkasim::{define_model_enums, prelude::*}; 
-use std::fs::create_dir_all;
+<pre><pre class="playground"><code class="language-rust no_run">use std::{error::Error, fs::create_dir_all, time::Duration};
+use quokkasim::{define_model_enums, prelude::*};
 
 define_model_enums! {
     pub enum ComponentModel {}
     pub enum ComponentModelAddress {}
     pub enum ComponentLogger {}
-    pub enum ScheduledEvent {}
+    pub enum ScheduledEventConfig {}
 }
 
 impl CustomComponentConnection for ComponentModel {
@@ -364,90 +424,96 @@ impl CustomLoggerConnection for ComponentLogger {
         }
     }
 }
-
-impl CustomInit for ComponentModelAddress {
-    fn initialise(&amp;mut self, simu: &amp;mut Simulation) -&gt; Result&lt;(), ExecutionError&gt; {
-        let notif_meta = NotificationMetadata {
-            time: simu.time(),
-            element_from: "Init".into(),
-            message: "Start".into(),
-        };
-        match self {
-            _ =&gt; {
-                Err(ExecutionError::BadQuery)
-            }
-        }
-    }
-}
-
 fn main() {
-    
     /*
      * Create components
      */
-    let mut stock1 = ComponentModel::VectorStockF64(
-        VectorStock::new()
-            .with_name("Stock1".to_string())
-            .with_low_capacity(5.)
-            .with_max_capacity(30.)
-            .with_initial_vector(30.),
+    let mut source = ComponentModel::VectorSourceVector3(
+        VectorSource::new()
+            .with_name("Source".into())     // A unique, human readable name
+            .with_code("SRC".into())        // A unique code, for readable logging
+            .with_process_quantity_distr(Distribution::Constant(50.))   // Quantity of resource to create
+            .with_process_time_distr(Distribution::Constant(90.))       // Time taken to create resource
+            .with_source_vector([1., 4., 5.].into()),                   // Composition of the resource
         Mailbox::new()
     );
 
-    let mut process1 = ComponentModel::VectorProcessF64(
+    let mut stock_1 = ComponentModel::VectorStockVector3(
+        VectorStock::new()
+            .with_name("Stock 1".into())
+            .with_code("ST1".into())
+            .with_low_capacity(10.)                         // Threshold to consider the stock 'empty'
+            .with_max_capacity(100.)                        // Threshold to consider the stock 'full'
+            .with_initial_vector([40., 40., 0.].into()),    // Initial composition of the stock
+        Mailbox::new()
+    );
+    let mut process = ComponentModel::VectorProcessVector3(
         VectorProcess::new()
-            .with_name("Process1".to_string())
-            .with_process_quantity_distr(Distribution::Constant(12.))
-            .with_process_time_distr(Distribution::Constant(3.)),
+            .with_name("Process".into())
+            .with_code("PRC".into())
+            .with_process_quantity_distr(Distribution::Constant(20.))
+            .with_process_time_distr(Distribution::Constant(30.)),
         Mailbox::new()
     );
-    let mut process_addr = process1.get_address();
-
-    let mut stock2 = ComponentModel::VectorStockF64(
+    let mut stock_2 = ComponentModel::VectorStockVector3(
         VectorStock::new()
-            .with_name("Stock2".to_string())
-            .with_low_capacity(15.)
-            .with_max_capacity(30.)
-            .with_initial_vector(0.),
+            .with_name("Stock 2".into())
+            .with_code("ST2".into())
+            .with_low_capacity(10.)
+            .with_max_capacity(100.)
+            .with_initial_vector([0., 0., 0.].into()),
         Mailbox::new()
     );
 
-    connect_components!(&amp;mut stock1, &amp;mut process1).unwrap();
-    connect_components!(&amp;mut process1, &amp;mut stock2).unwrap();
+    let mut sink = ComponentModel::VectorSinkVector3(
+        VectorSink::new()
+            .with_name("Sink".into())
+            .with_code("SNK".into())
+            .with_process_quantity_distr(Distribution::Constant(16.))
+            .with_process_time_distr(Distribution::Constant(20.)),
+        Mailbox::new()
+    );
+
+    connect_components!(&amp;mut source, &amp;mut stock_1).unwrap();
+    connect_components!(&amp;mut stock_1, &amp;mut process).unwrap();
+    connect_components!(&amp;mut process, &amp;mut stock_2).unwrap();
+    connect_components!(&amp;mut stock_2, &amp;mut sink).unwrap();
 
     /*
      * Create loggers
      */
-    let mut stock_logger = ComponentLogger::VectorStockLoggerF64(VectorStockLogger::new("StockLogger".into()));
-    let mut process_logger = ComponentLogger::VectorProcessLoggerF64(VectorProcessLogger::new("ProcessLogger".into()));
+    let mut process_logger = ComponentLogger::VectorProcessLoggerVector3(VectorProcessLogger::new("ProcessLogger".into()));
+    let mut stock_logger = ComponentLogger::VectorStockLoggerVector3(VectorStockLogger::new("StockLogger".into()));
 
-    connect_logger!(&amp;mut stock_logger, &amp;mut stock1).unwrap();
-    connect_logger!(&amp;mut stock_logger, &amp;mut stock2).unwrap();
-    connect_logger!(&amp;mut process_logger, &amp;mut process1).unwrap();
+    connect_logger!(&amp;mut process_logger, &amp;mut source).unwrap();
+    connect_logger!(&amp;mut process_logger, &amp;mut process).unwrap();
+    connect_logger!(&amp;mut process_logger, &amp;mut sink).unwrap();
+    connect_logger!(&amp;mut stock_logger, &amp;mut stock_1).unwrap();
+    connect_logger!(&amp;mut stock_logger, &amp;mut stock_2).unwrap();
 
     /*
      * Build simulation
      */
     let mut sim_builder = SimInit::new();
-    sim_builder = register_component!(sim_builder, stock1);
-    sim_builder = register_component!(sim_builder, process1);
-    sim_builder = register_component!(sim_builder, stock2);
 
-    let start_time = MonotonicTime::EPOCH;
-    let mut simu = sim_builder.init(MonotonicTime::EPOCH).unwrap().0;
+    sim_builder = register_component!(sim_builder, stock_1);
+    sim_builder = register_component!(sim_builder, stock_2);
+    sim_builder = register_component!(sim_builder, source);
+    sim_builder = register_component!(sim_builder, process);
+    sim_builder = register_component!(sim_builder, sink);
+
+    let start_time = MonotonicTime::try_from_date_time(2025, 1, 1, 0, 0, 0, 0).unwrap();
+    let mut simu = sim_builder.init(start_time).unwrap().0;
 
     /*
      * Run simulation
      */
-    process_addr.initialise(&amp;mut simu).unwrap();
+    simu.step_until(start_time + Duration::from_secs(300)).unwrap();
 
-    let end_time = start_time + Duration::from_secs(3600);
-    simu.step_until(end_time).unwrap();
-
-    let output_dir = "outputs/example_0";
-    create_dir_all(&amp;output_dir).unwrap();
-    process_logger.write_csv(output_dir).unwrap();
+    let output_dir = "outputs/source_sink";
+    create_dir_all(output_dir).unwrap();
     stock_logger.write_csv(output_dir).unwrap();
+    process_logger.write_csv(output_dir).unwrap();
 }</code></pre></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-2-a-conceptual-overview"><a class="header" href="#chapter-2-a-conceptual-overview">Chapter 2: A Conceptual Overview</a></h1>
 <p>In this chapter, we cover the main concepts defined and used in QuokkaSim, and how to map your real-world scenario into these concepts, which we will later cover how to implement as a model in Chapter 3.</p>
@@ -554,6 +620,9 @@ We have a stock representing a queue of customers, which is processed by a baris
 <li>Execution and Logging</li>
 </ol>
 <p>This chapter will explain the purpose of the specific structs, enums, traits and macros provided by QuokkaSim. Code snippets are also used, but are only for demonstrating individual concepts. Numerous full examples of working simulations can be found in <a href="examples.html">Chapter 4: Examples</a>.</p>
+<blockquote>
+<p>⚠️ Arr! This chapter has not yet been updated for QuokkaSim <code>0.1.0</code>. Some things like <code>notif_meta</code> have been replaced, though things are largely the same. Check back soon for an updated chapter!</p>
+</blockquote>
 <hr />
 <h2 id="31-definitions"><a class="header" href="#31-definitions">3.1. Definitions</a></h2>
 <h3 id="311-enums"><a class="header" href="#311-enums">3.1.1. Enums</a></h3>
@@ -797,15 +866,28 @@ impl CustomInit for ComponentInit {
 <table>
 <thead>
 <tr>
-    <td>Example Name</td>
-    <td>Description</td>
-    <td>Concepts Demonstrated</td>
+    <td>Example</td>
+    <td>Concepts</td>
 </tr>
 </thead>
 <tbody>
 <tr>
-    <td><a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/material_blending.rs">material_blending.rs</a></td>
-    <td>Model of a stockyard with Reclaimers to remove material from multiple stockpiles, and a Stacker to add material to multiple stockpiles.</td>
+    <td>
+        <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/source_sink.rs">source_sink.rs</a>
+        <p>Linear chain of a source, process and sink, linked via stocks. This example is covered in Chapter 1.</p>
+    </td>
+    <td class="badge-container">
+        <span class="badge">Pre-built components</span>
+        <span class="badge">Vector Resource (Vector3)</span>
+        <span class="badge">Sources</span>
+        <span class="badge">Sinks</span>
+    </td>
+</tr>
+<tr>
+    <td>
+        <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/material_blending.rs">material_blending.rs</a>
+        <p>Model of a stockyard with Reclaimers to remove material from multiple stockpiles, and a Stacker to add material to multiple stockpiles.</p>
+    </td>
     <td class="badge-container">
         <span class="badge">Pre-built components</span>
         <span class="badge">Vector Resource (Vector3)</span>
@@ -813,8 +895,10 @@ impl CustomInit for ComponentInit {
     </td>
 </tr>
 <tr>
-    <td><a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/discrete_queue.rs">discrete_queue.rs</a></td>
-    <td>Basic example demonstrating use of a Sequence resource of Strings. Processes and stocks are arranged in infinite loop.</td>
+    <td>
+        <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/discrete_queue.rs">discrete_queue.rs</a>
+        <p>Basic example demonstrating use of a Sequence resource of Strings. Processes and stocks are arranged in infinite loop.</p>
+    </td>
     <td class="badge-container">
         <span class="badge">Pre-built components</span>
         <span class="badge">Sequence Resource (String)</span>
@@ -822,11 +906,35 @@ impl CustomInit for ComponentInit {
     </td>
 </tr>
 <tr>
-    <td><a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/iron_ore.rs">iron_ore.rs</a></td>
-    <td>Processes involving an Iron Ore resource, which tracks elemental mass composition, and composition by mineral types.</td>
+    <td>
+        <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/iron_ore.rs">iron_ore.rs</a>
+        <p>Processes involving an Iron Ore resource, which tracks elemental mass composition, and composition by mineral types.</p>
+    </td>
     <td class="badge-container">
         <span class="badge">Custom vector resource</span>
         <span class="badge">Distribution Sampling</span>
+    </td>
+</tr>
+<tr>
+    <td>
+        <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/assembly_line.rs">assembly_line.rs</a>
+        <p>Linear model using a custom discrete ProtoCar resource but pre-built components. Demonstrates use of an Environment component accessible by all processes.</p>
+    </td>
+    <td class="badge-container">
+        <span class="badge">Custom discrete resource</span>
+        <span class="badge">Environment component</span>
+        <span class="badge">Scheduled events</span>
+    </td>
+</tr>
+<tr>
+    <td>
+        <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/truck_loading_dumping/main.rs">truck_loading_dumping</a>
+        <p>Demonstrates creation of custom components (LoadingProcess and DumpingProcess) which interact with multiple resource types (Truck and Ore). Usage of DiscreteParallelProcess to multiple truck movements in parallel. Logic is split between multiple files.</p>
+    </td>
+    <td class="badge-container">
+        <span class="badge">Custom components</span>
+        <span class="badge">Multiple resources</span>
+        <span class="badge">Discrete Parallel Process</span>
     </td>
 </tr>
 </tbody>
