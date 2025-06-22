@@ -2,24 +2,10 @@
 
 Welcome to the **QuokkaSim Book** – your guide to learning and mastering QuokkaSim, the Rust-based discrete-event simulation framework.
 
-> As of the **8th June 2025**, QuokkaSim is at version `0.1.0` and is under **very active** development. JJ is currently looking for feedback on:
->
-> - Your experiencing learning QuokkaSim, no matter your prior experience
->   - Are the main concepts (Resource, Stocks, Processes, Loggers etc.) intuitive?
-    - Is it easy to map real-world scenarios into the above concepts?
->   - Are the tutorials here and examples in the repository easy to follow?
->   - Are you having to fight the Rust compiler? If yes, what kind type of issues are you facing? A quick onboarding to Rust is within the scope of what I would like this guide to cover
->   - Is it easy to know how to implement model features you have in mind? This is also within the scope of what I would like this guide to cover (at least briefly)
->   - How is the model debugging process with logged events? Is the provided logging sufficient to help debug issues, or are you having to dive deeper?
-> - Pain points whilst developing
->   - Are compiler and runtime errors informative enough to debug easily?
->   - What is tedious and repetitive? Future releases will have utilities to reduce repetition and boilerplate
-> - Bugs and issues
->   - Unsure if you've found a bug? Let me know anyway! Even if it's not a bug, it may be something unintuitive or unclearly documented, which I am interested in improving
->   - Unsure about things in general? Let me know anyway! Your uncertainty may be a great prompt for content to include in the FAQ or other areas of the documentation or book
-> - Use cases
->   - Let's chat if you think you have a use case for QuokkaSim, or if you need any help with mapping your use case into QuokkaSim! I want the modelling process to be as easy as possible - and that includes mapping from a real-world scenario, into a runnable model.
-
+> As of the **22nd June 2025**, QuokkaSim is at version `0.2.1` and is under **very active** development. JJ is currently looking for feedback on:
+> - **Your experiencing learning QuokkaSim**. Is anything more difficult than it should be? I'd love to hear about it!
+> - **Mapping your use cases to QuokkaSim**. Unsure how your particular use case can be modelled with QuokkaSim? I'd love to hear about it and discuss it with you!
+> - **Anything in general, really**. QuokkaSim is still in early days - so any and all feedback is appreciated!
 
 ---
 
@@ -62,5 +48,11 @@ For new simulation modellers:
 - Rust's strict compiler ensures all possible cases are explicitly handled and enforces the principle of making impossible states unrepresentable. This aligns perfectly with simulation modeling, where defining clear rules and handling unforeseen edge cases is crucial for reliable extrapolation beyond empirical data and known behaviours.
 
 - Rust is the world's [most admired programming language](https://survey.stackoverflow.co/2024/technology#admired-and-desired-language-desire-admire), and has [maintained this status for the last 8 years](https://github.blog/developer-skills/programming-languages-and-frameworks/why-rust-is-the-most-admired-language-among-developers/)
+
+**Why choose QuokkaSim over SimPy?**
+
+Two main points:
+- **Performance** - plain and simple. Faster performance and a smaller memory footprint means not only faster model development and scenario runs, but also unlocks many more opportunities for use e.g. integrations into ML models, embedment in web applications etc.
+- **Maintainability** especially for larger simulation models. Different from SimPy, **QuokkaSim** provides a comprehensive framework of components that can be used as-is, or extended by defining custom components, and also benefits from the strictness of Rust's compiler and borrow checker, to provide modellers less time debugging 'plumbing' issues, and more time on business logic and features.
 
 **Yes, this FAQ is bare. Please let JJ know if you have any questions - I'd like to add more to this section!**

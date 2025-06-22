@@ -8,7 +8,7 @@ Now that we've understood the core concepts used by QuokkaSim, let's look at how
 
 This chapter will explain the purpose of the specific structs, enums, traits and macros provided by QuokkaSim. Code snippets are also used, but are only for demonstrating individual concepts. Numerous full examples of working simulations can be found in [Chapter 4: Examples](examples.md).
 
-> ⚠️ Arr! This chapter has not yet been updated for QuokkaSim `0.1.0`. Some things like `notif_meta` have been replaced, though things are largely the same. Check back soon for an updated chapter!
+> ⚠️ Arr! This chapter has not yet been updated for QuokkaSim `0.2.1`. Some things like `notif_meta` have been replaced, though things are largely the same. Check back soon for an updated chapter!
 
 ---
 

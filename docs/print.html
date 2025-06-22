@@ -159,35 +159,11 @@
                         <h1 id="the-quokkasim-book"><a class="header" href="#the-quokkasim-book">The QuokkaSim Book</a></h1>
 <p>Welcome to the <strong>QuokkaSim Book</strong> – your guide to learning and mastering QuokkaSim, the Rust-based discrete-event simulation framework.</p>
 <blockquote>
-<p>As of the <strong>8th June 2025</strong>, QuokkaSim is at version <code>0.1.0</code> and is under <strong>very active</strong> development. JJ is currently looking for feedback on:</p>
+<p>As of the <strong>22nd June 2025</strong>, QuokkaSim is at version <code>0.2.1</code> and is under <strong>very active</strong> development. JJ is currently looking for feedback on:</p>
 <ul>
-<li>Your experiencing learning QuokkaSim, no matter your prior experience
-<ul>
-<li>Are the main concepts (Resource, Stocks, Processes, Loggers etc.) intuitive?
-- Is it easy to map real-world scenarios into the above concepts?</li>
-<li>Are the tutorials here and examples in the repository easy to follow?</li>
-<li>Are you having to fight the Rust compiler? If yes, what kind type of issues are you facing? A quick onboarding to Rust is within the scope of what I would like this guide to cover</li>
-<li>Is it easy to know how to implement model features you have in mind? This is also within the scope of what I would like this guide to cover (at least briefly)</li>
-<li>How is the model debugging process with logged events? Is the provided logging sufficient to help debug issues, or are you having to dive deeper?</li>
-</ul>
-</li>
-<li>Pain points whilst developing
-<ul>
-<li>Are compiler and runtime errors informative enough to debug easily?</li>
-<li>What is tedious and repetitive? Future releases will have utilities to reduce repetition and boilerplate</li>
-</ul>
-</li>
-<li>Bugs and issues
-<ul>
-<li>Unsure if you've found a bug? Let me know anyway! Even if it's not a bug, it may be something unintuitive or unclearly documented, which I am interested in improving</li>
-<li>Unsure about things in general? Let me know anyway! Your uncertainty may be a great prompt for content to include in the FAQ or other areas of the documentation or book</li>
-</ul>
-</li>
-<li>Use cases
-<ul>
-<li>Let's chat if you think you have a use case for QuokkaSim, or if you need any help with mapping your use case into QuokkaSim! I want the modelling process to be as easy as possible - and that includes mapping from a real-world scenario, into a runnable model.</li>
-</ul>
-</li>
+<li><strong>Your experiencing learning QuokkaSim</strong>. Is anything more difficult than it should be? I'd love to hear about it!</li>
+<li><strong>Mapping your use cases to QuokkaSim</strong>. Unsure how your particular use case can be modelled with QuokkaSim? I'd love to hear about it and discuss it with you!</li>
+<li><strong>Anything in general, really</strong>. QuokkaSim is still in early days - so any and all feedback is appreciated!</li>
 </ul>
 </blockquote>
 <hr />
@@ -232,6 +208,12 @@
 <li>
 <p>Rust is the world's <a href="https://survey.stackoverflow.co/2024/technology#admired-and-desired-language-desire-admire">most admired programming language</a>, and has <a href="https://github.blog/developer-skills/programming-languages-and-frameworks/why-rust-is-the-most-admired-language-among-developers/">maintained this status for the last 8 years</a></p>
 </li>
+</ul>
+<p><strong>Why choose QuokkaSim over SimPy?</strong></p>
+<p>Two main points:</p>
+<ul>
+<li><strong>Performance</strong> - plain and simple. Faster performance and a smaller memory footprint means not only faster model development and scenario runs, but also unlocks many more opportunities for use e.g. integrations into ML models, embedment in web applications etc.</li>
+<li><strong>Maintainability</strong> especially for larger simulation models. Different from SimPy, <strong>QuokkaSim</strong> provides a comprehensive framework of components that can be used as-is, or extended by defining custom components, and also benefits from the strictness of Rust's compiler and borrow checker, to provide modellers less time debugging 'plumbing' issues, and more time on business logic and features.</li>
 </ul>
 <p><strong>Yes, this FAQ is bare. Please let JJ know if you have any questions - I'd like to add more to this section!</strong></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-1-getting-started"><a class="header" href="#chapter-1-getting-started">Chapter 1: Getting Started</a></h1>
@@ -297,51 +279,49 @@ impl CustomLoggerConnection for ComponentLogger {
 <p><code>Stock 1</code> hold some quantity of material, which <code>Process</code> moves at specific times, into <code>Stock 2</code>. Add the following into the <code>main()</code> function to create these components, and to connect them together.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    let mut source = ComponentModel::VectorSourceVector3(
+</span>    let mut source = ComponentModel::Vector3Source(
         VectorSource::new()
-            .with_name("Source".into())     // A unique, human readable name
-            .with_code("SRC".into())        // A unique code, for readable logging
-            .with_process_quantity_distr(Distribution::Constant(50.))   // Quantity of resource to create
-            .with_process_time_distr(Distribution::Constant(90.))       // Time taken to create resource
-            .with_source_vector([1., 4., 5.].into()),                   // Composition of the resource
+            .with_name("Source")
+            .with_process_quantity_distr(Distribution::Constant(1.))
+            .with_process_time_distr(Distribution::Constant(1.))
+            .with_source_vector([1., 4., 5.].into()),
         Mailbox::new()
     );
 
-    let mut stock_1 = ComponentModel::VectorStockVector3(
+    let mut stock_1 = ComponentModel::Vector3Stock(
         VectorStock::new()
-            .with_name("Stock 1".into())
-            .with_code("ST1".into())
-            .with_low_capacity(10.)                         // Threshold to consider the stock 'empty'
-            .with_max_capacity(100.)                        // Threshold to consider the stock 'full'
-            .with_initial_vector([40., 40., 0.].into()),    // Initial composition of the stock
+            .with_name("Stock 1")
+            .with_low_capacity(50.)
+            .with_max_capacity(101.)
+            .with_initial_resource([0., 0., 0.].into()),
         Mailbox::new()
     );
-    let mut process = ComponentModel::VectorProcessVector3(
+    let mut process = ComponentModel::Vector3Process(
         VectorProcess::new()
-            .with_name("Process".into())
-            .with_code("PRC".into())
-            .with_process_quantity_distr(Distribution::Constant(20.))
-            .with_process_time_distr(Distribution::Constant(30.)),
+            .with_name("Process")
+            .with_process_quantity_distr(Distribution::Constant(1.))
+            .with_process_time_distr(Distribution::Constant(1.)),
         Mailbox::new()
     );
-    let mut stock_2 = ComponentModel::VectorStockVector3(
+    let mut stock_2 = ComponentModel::Vector3Stock(
         VectorStock::new()
-            .with_name("Stock 2".into())
-            .with_code("ST2".into())
-            .with_low_capacity(10.)
-            .with_max_capacity(100.)
-            .with_initial_vector([0., 0., 0.].into()),
+            .with_name("Stock 2")
+            .with_low_capacity(50.)
+            .with_max_capacity(101.)
+            .with_initial_resource([0., 0., 0.].into()),
         Mailbox::new()
     );
 
-    let mut sink = ComponentModel::VectorSinkVector3(
+    let mut sink = ComponentModel::Vector3Sink(
         VectorSink::new()
-            .with_name("Sink".into())
-            .with_code("SNK".into())
-            .with_process_quantity_distr(Distribution::Constant(16.))
-            .with_process_time_distr(Distribution::Constant(20.)),
+            .with_name("Sink")
+            .with_process_quantity_distr(Distribution::Constant(1.))
+            .with_process_time_distr(Distribution::Constant(2.)),
         Mailbox::new()
     );
+
+    let mut process_logger = ComponentLogger::Vector3ProcessLogger(VectorProcessLogger::new("ProcessLogger"));
+    let mut stock_logger = ComponentLogger::Vector3StockLogger(VectorStockLogger::new("StockLogger"));
 
     connect_components!(&amp;mut source, &amp;mut stock_1).unwrap();
     connect_components!(&amp;mut stock_1, &amp;mut process).unwrap();
@@ -351,9 +331,7 @@ impl CustomLoggerConnection for ComponentLogger {
 <p>Next we'll add some <code>Logger</code> instances to report on what occurs during the simulation, and connect them to our Process and Stock components.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    let mut process_logger = ComponentLogger::VectorProcessLoggerVector3(VectorProcessLogger::new("ProcessLogger".into()));
-    let mut stock_logger = ComponentLogger::VectorStockLoggerVector3(VectorStockLogger::new("StockLogger".into()));
-
+</span>    // Connect loggers
     connect_logger!(&amp;mut process_logger, &amp;mut source).unwrap();
     connect_logger!(&amp;mut process_logger, &amp;mut process).unwrap();
     connect_logger!(&amp;mut process_logger, &amp;mut sink).unwrap();
@@ -372,12 +350,12 @@ impl CustomLoggerConnection for ComponentLogger {
     sim_builder = register_component!(sim_builder, sink);
 
     let start_time = MonotonicTime::try_from_date_time(2025, 1, 1, 0, 0, 0, 0).unwrap();
-    let mut simu = sim_builder.init(start_time).unwrap().0;
+    let (mut simu, scheduler) = sim_builder.init(start_time).unwrap();
 <span class="boring">}</span></code></pre></pre>
 <p>We send and initialisation events, tell our simulation to run for an hour, and write the resulting logs to CSV files.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    simu.step_until(start_time + Duration::from_secs(300)).unwrap();
+</span>    simu.step_until(start_time + Duration::from_secs(120)).unwrap();
 
     let output_dir = "outputs/source_sink";
     create_dir_all(output_dir).unwrap();
@@ -428,51 +406,49 @@ fn main() {
     /*
      * Create components
      */
-    let mut source = ComponentModel::VectorSourceVector3(
+    let mut source = ComponentModel::Vector3Source(
         VectorSource::new()
-            .with_name("Source".into())     // A unique, human readable name
-            .with_code("SRC".into())        // A unique code, for readable logging
-            .with_process_quantity_distr(Distribution::Constant(50.))   // Quantity of resource to create
-            .with_process_time_distr(Distribution::Constant(90.))       // Time taken to create resource
-            .with_source_vector([1., 4., 5.].into()),                   // Composition of the resource
+            .with_name("Source")
+            .with_process_quantity_distr(Distribution::Constant(1.))
+            .with_process_time_distr(Distribution::Constant(1.))
+            .with_source_vector([1., 4., 5.].into()),
         Mailbox::new()
     );
 
-    let mut stock_1 = ComponentModel::VectorStockVector3(
+    let mut stock_1 = ComponentModel::Vector3Stock(
         VectorStock::new()
-            .with_name("Stock 1".into())
-            .with_code("ST1".into())
-            .with_low_capacity(10.)                         // Threshold to consider the stock 'empty'
-            .with_max_capacity(100.)                        // Threshold to consider the stock 'full'
-            .with_initial_vector([40., 40., 0.].into()),    // Initial composition of the stock
+            .with_name("Stock 1")
+            .with_low_capacity(50.)
+            .with_max_capacity(101.)
+            .with_initial_resource([0., 0., 0.].into()),
         Mailbox::new()
     );
-    let mut process = ComponentModel::VectorProcessVector3(
+    let mut process = ComponentModel::Vector3Process(
         VectorProcess::new()
-            .with_name("Process".into())
-            .with_code("PRC".into())
-            .with_process_quantity_distr(Distribution::Constant(20.))
-            .with_process_time_distr(Distribution::Constant(30.)),
+            .with_name("Process")
+            .with_process_quantity_distr(Distribution::Constant(1.))
+            .with_process_time_distr(Distribution::Constant(1.)),
         Mailbox::new()
     );
-    let mut stock_2 = ComponentModel::VectorStockVector3(
+    let mut stock_2 = ComponentModel::Vector3Stock(
         VectorStock::new()
-            .with_name("Stock 2".into())
-            .with_code("ST2".into())
-            .with_low_capacity(10.)
-            .with_max_capacity(100.)
-            .with_initial_vector([0., 0., 0.].into()),
+            .with_name("Stock 2")
+            .with_low_capacity(50.)
+            .with_max_capacity(101.)
+            .with_initial_resource([0., 0., 0.].into()),
         Mailbox::new()
     );
 
-    let mut sink = ComponentModel::VectorSinkVector3(
+    let mut sink = ComponentModel::Vector3Sink(
         VectorSink::new()
-            .with_name("Sink".into())
-            .with_code("SNK".into())
-            .with_process_quantity_distr(Distribution::Constant(16.))
-            .with_process_time_distr(Distribution::Constant(20.)),
+            .with_name("Sink")
+            .with_process_quantity_distr(Distribution::Constant(1.))
+            .with_process_time_distr(Distribution::Constant(2.)),
         Mailbox::new()
     );
+
+    let mut process_logger = ComponentLogger::Vector3ProcessLogger(VectorProcessLogger::new("ProcessLogger"));
+    let mut stock_logger = ComponentLogger::Vector3StockLogger(VectorStockLogger::new("StockLogger"));
 
     connect_components!(&amp;mut source, &amp;mut stock_1).unwrap();
     connect_components!(&amp;mut stock_1, &amp;mut process).unwrap();
@@ -482,9 +458,7 @@ fn main() {
     /*
      * Create loggers
      */
-    let mut process_logger = ComponentLogger::VectorProcessLoggerVector3(VectorProcessLogger::new("ProcessLogger".into()));
-    let mut stock_logger = ComponentLogger::VectorStockLoggerVector3(VectorStockLogger::new("StockLogger".into()));
-
+    // Connect loggers
     connect_logger!(&amp;mut process_logger, &amp;mut source).unwrap();
     connect_logger!(&amp;mut process_logger, &amp;mut process).unwrap();
     connect_logger!(&amp;mut process_logger, &amp;mut sink).unwrap();
@@ -503,12 +477,12 @@ fn main() {
     sim_builder = register_component!(sim_builder, sink);
 
     let start_time = MonotonicTime::try_from_date_time(2025, 1, 1, 0, 0, 0, 0).unwrap();
-    let mut simu = sim_builder.init(start_time).unwrap().0;
+    let (mut simu, scheduler) = sim_builder.init(start_time).unwrap();
 
     /*
      * Run simulation
      */
-    simu.step_until(start_time + Duration::from_secs(300)).unwrap();
+    simu.step_until(start_time + Duration::from_secs(120)).unwrap();
 
     let output_dir = "outputs/source_sink";
     create_dir_all(output_dir).unwrap();
@@ -621,7 +595,7 @@ We have a stock representing a queue of customers, which is processed by a baris
 </ol>
 <p>This chapter will explain the purpose of the specific structs, enums, traits and macros provided by QuokkaSim. Code snippets are also used, but are only for demonstrating individual concepts. Numerous full examples of working simulations can be found in <a href="examples.html">Chapter 4: Examples</a>.</p>
 <blockquote>
-<p>⚠️ Arr! This chapter has not yet been updated for QuokkaSim <code>0.1.0</code>. Some things like <code>notif_meta</code> have been replaced, though things are largely the same. Check back soon for an updated chapter!</p>
+<p>⚠️ Arr! This chapter has not yet been updated for QuokkaSim <code>0.2.1</code>. Some things like <code>notif_meta</code> have been replaced, though things are largely the same. Check back soon for an updated chapter!</p>
 </blockquote>
 <hr />
 <h2 id="31-definitions"><a class="header" href="#31-definitions">3.1. Definitions</a></h2>

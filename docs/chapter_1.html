@@ -218,51 +218,49 @@ impl CustomLoggerConnection for ComponentLogger {
 <p><code>Stock 1</code> hold some quantity of material, which <code>Process</code> moves at specific times, into <code>Stock 2</code>. Add the following into the <code>main()</code> function to create these components, and to connect them together.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    let mut source = ComponentModel::VectorSourceVector3(
+</span>    let mut source = ComponentModel::Vector3Source(
         VectorSource::new()
-            .with_name("Source".into())     // A unique, human readable name
-            .with_code("SRC".into())        // A unique code, for readable logging
-            .with_process_quantity_distr(Distribution::Constant(50.))   // Quantity of resource to create
-            .with_process_time_distr(Distribution::Constant(90.))       // Time taken to create resource
-            .with_source_vector([1., 4., 5.].into()),                   // Composition of the resource
+            .with_name("Source")
+            .with_process_quantity_distr(Distribution::Constant(1.))
+            .with_process_time_distr(Distribution::Constant(1.))
+            .with_source_vector([1., 4., 5.].into()),
         Mailbox::new()
     );
 
-    let mut stock_1 = ComponentModel::VectorStockVector3(
+    let mut stock_1 = ComponentModel::Vector3Stock(
         VectorStock::new()
-            .with_name("Stock 1".into())
-            .with_code("ST1".into())
-            .with_low_capacity(10.)                         // Threshold to consider the stock 'empty'
-            .with_max_capacity(100.)                        // Threshold to consider the stock 'full'
-            .with_initial_vector([40., 40., 0.].into()),    // Initial composition of the stock
+            .with_name("Stock 1")
+            .with_low_capacity(50.)
+            .with_max_capacity(101.)
+            .with_initial_resource([0., 0., 0.].into()),
         Mailbox::new()
     );
-    let mut process = ComponentModel::VectorProcessVector3(
+    let mut process = ComponentModel::Vector3Process(
         VectorProcess::new()
-            .with_name("Process".into())
-            .with_code("PRC".into())
-            .with_process_quantity_distr(Distribution::Constant(20.))
-            .with_process_time_distr(Distribution::Constant(30.)),
+            .with_name("Process")
+            .with_process_quantity_distr(Distribution::Constant(1.))
+            .with_process_time_distr(Distribution::Constant(1.)),
         Mailbox::new()
     );
-    let mut stock_2 = ComponentModel::VectorStockVector3(
+    let mut stock_2 = ComponentModel::Vector3Stock(
         VectorStock::new()
-            .with_name("Stock 2".into())
-            .with_code("ST2".into())
-            .with_low_capacity(10.)
-            .with_max_capacity(100.)
-            .with_initial_vector([0., 0., 0.].into()),
+            .with_name("Stock 2")
+            .with_low_capacity(50.)
+            .with_max_capacity(101.)
+            .with_initial_resource([0., 0., 0.].into()),
         Mailbox::new()
     );
 
-    let mut sink = ComponentModel::VectorSinkVector3(
+    let mut sink = ComponentModel::Vector3Sink(
         VectorSink::new()
-            .with_name("Sink".into())
-            .with_code("SNK".into())
-            .with_process_quantity_distr(Distribution::Constant(16.))
-            .with_process_time_distr(Distribution::Constant(20.)),
+            .with_name("Sink")
+            .with_process_quantity_distr(Distribution::Constant(1.))
+            .with_process_time_distr(Distribution::Constant(2.)),
         Mailbox::new()
     );
+
+    let mut process_logger = ComponentLogger::Vector3ProcessLogger(VectorProcessLogger::new("ProcessLogger"));
+    let mut stock_logger = ComponentLogger::Vector3StockLogger(VectorStockLogger::new("StockLogger"));
 
     connect_components!(&amp;mut source, &amp;mut stock_1).unwrap();
     connect_components!(&amp;mut stock_1, &amp;mut process).unwrap();
@@ -272,9 +270,7 @@ impl CustomLoggerConnection for ComponentLogger {
 <p>Next we'll add some <code>Logger</code> instances to report on what occurs during the simulation, and connect them to our Process and Stock components.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    let mut process_logger = ComponentLogger::VectorProcessLoggerVector3(VectorProcessLogger::new("ProcessLogger".into()));
-    let mut stock_logger = ComponentLogger::VectorStockLoggerVector3(VectorStockLogger::new("StockLogger".into()));
-
+</span>    // Connect loggers
     connect_logger!(&amp;mut process_logger, &amp;mut source).unwrap();
     connect_logger!(&amp;mut process_logger, &amp;mut process).unwrap();
     connect_logger!(&amp;mut process_logger, &amp;mut sink).unwrap();
@@ -293,12 +289,12 @@ impl CustomLoggerConnection for ComponentLogger {
     sim_builder = register_component!(sim_builder, sink);
 
     let start_time = MonotonicTime::try_from_date_time(2025, 1, 1, 0, 0, 0, 0).unwrap();
-    let mut simu = sim_builder.init(start_time).unwrap().0;
+    let (mut simu, scheduler) = sim_builder.init(start_time).unwrap();
 <span class="boring">}</span></code></pre></pre>
 <p>We send and initialisation events, tell our simulation to run for an hour, and write the resulting logs to CSV files.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    simu.step_until(start_time + Duration::from_secs(300)).unwrap();
+</span>    simu.step_until(start_time + Duration::from_secs(120)).unwrap();
 
     let output_dir = "outputs/source_sink";
     create_dir_all(output_dir).unwrap();
@@ -349,51 +345,49 @@ fn main() {
     /*
      * Create components
      */
-    let mut source = ComponentModel::VectorSourceVector3(
+    let mut source = ComponentModel::Vector3Source(
         VectorSource::new()
-            .with_name("Source".into())     // A unique, human readable name
-            .with_code("SRC".into())        // A unique code, for readable logging
-            .with_process_quantity_distr(Distribution::Constant(50.))   // Quantity of resource to create
-            .with_process_time_distr(Distribution::Constant(90.))       // Time taken to create resource
-            .with_source_vector([1., 4., 5.].into()),                   // Composition of the resource
+            .with_name("Source")
+            .with_process_quantity_distr(Distribution::Constant(1.))
+            .with_process_time_distr(Distribution::Constant(1.))
+            .with_source_vector([1., 4., 5.].into()),
         Mailbox::new()
     );
 
-    let mut stock_1 = ComponentModel::VectorStockVector3(
+    let mut stock_1 = ComponentModel::Vector3Stock(
         VectorStock::new()
-            .with_name("Stock 1".into())
-            .with_code("ST1".into())
-            .with_low_capacity(10.)                         // Threshold to consider the stock 'empty'
-            .with_max_capacity(100.)                        // Threshold to consider the stock 'full'
-            .with_initial_vector([40., 40., 0.].into()),    // Initial composition of the stock
+            .with_name("Stock 1")
+            .with_low_capacity(50.)
+            .with_max_capacity(101.)
+            .with_initial_resource([0., 0., 0.].into()),
         Mailbox::new()
     );
-    let mut process = ComponentModel::VectorProcessVector3(
+    let mut process = ComponentModel::Vector3Process(
         VectorProcess::new()
-            .with_name("Process".into())
-            .with_code("PRC".into())
-            .with_process_quantity_distr(Distribution::Constant(20.))
-            .with_process_time_distr(Distribution::Constant(30.)),
+            .with_name("Process")
+            .with_process_quantity_distr(Distribution::Constant(1.))
+            .with_process_time_distr(Distribution::Constant(1.)),
         Mailbox::new()
     );
-    let mut stock_2 = ComponentModel::VectorStockVector3(
+    let mut stock_2 = ComponentModel::Vector3Stock(
         VectorStock::new()
-            .with_name("Stock 2".into())
-            .with_code("ST2".into())
-            .with_low_capacity(10.)
-            .with_max_capacity(100.)
-            .with_initial_vector([0., 0., 0.].into()),
+            .with_name("Stock 2")
+            .with_low_capacity(50.)
+            .with_max_capacity(101.)
+            .with_initial_resource([0., 0., 0.].into()),
         Mailbox::new()
     );
 
-    let mut sink = ComponentModel::VectorSinkVector3(
+    let mut sink = ComponentModel::Vector3Sink(
         VectorSink::new()
-            .with_name("Sink".into())
-            .with_code("SNK".into())
-            .with_process_quantity_distr(Distribution::Constant(16.))
-            .with_process_time_distr(Distribution::Constant(20.)),
+            .with_name("Sink")
+            .with_process_quantity_distr(Distribution::Constant(1.))
+            .with_process_time_distr(Distribution::Constant(2.)),
         Mailbox::new()
     );
+
+    let mut process_logger = ComponentLogger::Vector3ProcessLogger(VectorProcessLogger::new("ProcessLogger"));
+    let mut stock_logger = ComponentLogger::Vector3StockLogger(VectorStockLogger::new("StockLogger"));
 
     connect_components!(&amp;mut source, &amp;mut stock_1).unwrap();
     connect_components!(&amp;mut stock_1, &amp;mut process).unwrap();
@@ -403,9 +397,7 @@ fn main() {
     /*
      * Create loggers
      */
-    let mut process_logger = ComponentLogger::VectorProcessLoggerVector3(VectorProcessLogger::new("ProcessLogger".into()));
-    let mut stock_logger = ComponentLogger::VectorStockLoggerVector3(VectorStockLogger::new("StockLogger".into()));
-
+    // Connect loggers
     connect_logger!(&amp;mut process_logger, &amp;mut source).unwrap();
     connect_logger!(&amp;mut process_logger, &amp;mut process).unwrap();
     connect_logger!(&amp;mut process_logger, &amp;mut sink).unwrap();
@@ -424,12 +416,12 @@ fn main() {
     sim_builder = register_component!(sim_builder, sink);
 
     let start_time = MonotonicTime::try_from_date_time(2025, 1, 1, 0, 0, 0, 0).unwrap();
-    let mut simu = sim_builder.init(start_time).unwrap().0;
+    let (mut simu, scheduler) = sim_builder.init(start_time).unwrap();
 
     /*
      * Run simulation
      */
-    simu.step_until(start_time + Duration::from_secs(300)).unwrap();
+    simu.step_until(start_time + Duration::from_secs(120)).unwrap();
 
     let output_dir = "outputs/source_sink";
     create_dir_all(output_dir).unwrap();
