@@ -2,7 +2,7 @@
 
 Welcome to the **QuokkaSim Book** – your guide to learning and mastering QuokkaSim, the Rust-based discrete-event simulation framework.
 
-> As of the **22nd June 2025**, QuokkaSim is at version `0.2.1` and is under **very active** development. JJ is currently looking for feedback on:
+> As of the **28th June 2025**, QuokkaSim is at version `0.2.2` and is under **very active** development. JJ is currently looking for feedback on:
 > - **Your experiencing learning QuokkaSim**. Is anything more difficult than it should be? I'd love to hear about it!
 > - **Mapping your use cases to QuokkaSim**. Unsure how your particular use case can be modelled with QuokkaSim? I'd love to hear about it and discuss it with you!
 > - **Anything in general, really**. QuokkaSim is still in early days - so any and all feedback is appreciated!

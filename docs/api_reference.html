@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Examples - The QuokkaSim Book</title>
+        <title>API Reference - The QuokkaSim Book</title>
 
 
         <!-- Custom HTML head -->
@@ -155,95 +155,46 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="chapter-4-examples"><a class="header" href="#chapter-4-examples">Chapter 4: Examples</a></h1>
-<p>A number of example simulations exist to act as a reference for how to apply the concepts covered in this guide, in practice:</p>
-<table>
-<thead>
-<tr>
-    <td>Example</td>
-    <td>Concepts</td>
-</tr>
-</thead>
-<tbody>
-<tr>
-    <td>
-        <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/source_sink.rs">source_sink.rs</a>
-        <p>Linear chain of a source, process and sink, linked via stocks. This example is covered in Chapter 1.</p>
-    </td>
-    <td class="badge-container">
-        <span class="badge">Pre-built components</span>
-        <span class="badge">Vector Resource (Vector3)</span>
-        <span class="badge">Sources</span>
-        <span class="badge">Sinks</span>
-    </td>
-</tr>
-<tr>
-    <td>
-        <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/material_blending.rs">material_blending.rs</a>
-        <p>Model of a stockyard with Reclaimers to remove material from multiple stockpiles, and a Stacker to add material to multiple stockpiles.</p>
-    </td>
-    <td class="badge-container">
-        <span class="badge">Pre-built components</span>
-        <span class="badge">Vector Resource (Vector3)</span>
-        <span class="badge">Splitters and Combiners</span>
-    </td>
-</tr>
-<tr>
-    <td>
-        <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/discrete_queue.rs">discrete_queue.rs</a>
-        <p>Basic example demonstrating use of a Sequence resource of Strings. Processes and stocks are arranged in infinite loop.</p>
-    </td>
-    <td class="badge-container">
-        <span class="badge">Pre-built components</span>
-        <span class="badge">Sequence Resource (String)</span>
-        <span class="badge">Distribution Sampling</span>
-    </td>
-</tr>
-<tr>
-    <td>
-        <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/iron_ore.rs">iron_ore.rs</a>
-        <p>Processes involving an Iron Ore resource, which tracks elemental mass composition, and composition by mineral types.</p>
-    </td>
-    <td class="badge-container">
-        <span class="badge">Custom vector resource</span>
-        <span class="badge">Distribution Sampling</span>
-    </td>
-</tr>
-<tr>
-    <td>
-        <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/assembly_line.rs">assembly_line.rs</a>
-        <p>Linear model using a custom discrete ProtoCar resource but pre-built components. Demonstrates use of an Environment component accessible by all processes.</p>
-    </td>
-    <td class="badge-container">
-        <span class="badge">Custom discrete resource</span>
-        <span class="badge">Environment component</span>
-        <span class="badge">Scheduled events</span>
-    </td>
-</tr>
-<tr>
-    <td>
-        <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/truck_loading_dumping/main.rs">truck_loading_dumping</a>
-        <p>Demonstrates creation of custom components (LoadingProcess and DumpingProcess) which interact with multiple resource types (Truck and Ore). Usage of DiscreteParallelProcess to multiple truck movements in parallel. Logic is split between multiple files.</p>
-    </td>
-    <td class="badge-container">
-        <span class="badge">Custom components</span>
-        <span class="badge">Multiple resources</span>
-        <span class="badge">Discrete Parallel Process</span>
-    </td>
-</tr>
-</tbody>
-</table>
+                        <h1 id="chapter-5-api-reference"><a class="header" href="#chapter-5-api-reference">Chapter 5: API Reference</a></h1>
+<h2 id="definitions-boilerplate"><a class="header" href="#definitions-boilerplate">Definitions Boilerplate</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::error::Error;
+use quokkasim::{define_model_enums, prelude::*};
+
+define_model_enums! {
+    pub enum ComponentModel {}
+    pub enum ComponentModelAddress {}
+    pub enum ComponentLogger {}
+    pub enum ScheduledEventConfig {}
+}
+
+impl CustomComponentConnection for ComponentModel {
+    fn connect_components(a: &amp;mut Self, b: &amp;mut Self, n: Option&lt;usize&gt;) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+        match (a, b) {
+            (a, b) =&gt; Err(format!("No component connection defined from {} to {} (n={:?})", a, b, n).into()),
+        }
+    }
+}
+
+impl CustomLoggerConnection for ComponentLogger { 
+    type ComponentType = ComponentModel;
+    fn connect_logger(a: &amp;mut Self, b: &amp;mut Self::ComponentType, n: Option&lt;usize&gt;) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+        match (a, b, n) {
+            (a, b, _) =&gt; Err(format!("No logger connection defined from {} to {} (n={:?})", a, b, n).into()),
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="chapter_3.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="examples.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="api_reference.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -251,13 +202,10 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="chapter_3.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="examples.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="api_reference.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
             </nav>
 
         </div>

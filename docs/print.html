@@ -159,7 +159,7 @@
                         <h1 id="the-quokkasim-book"><a class="header" href="#the-quokkasim-book">The QuokkaSim Book</a></h1>
 <p>Welcome to the <strong>QuokkaSim Book</strong> – your guide to learning and mastering QuokkaSim, the Rust-based discrete-event simulation framework.</p>
 <blockquote>
-<p>As of the <strong>22nd June 2025</strong>, QuokkaSim is at version <code>0.2.1</code> and is under <strong>very active</strong> development. JJ is currently looking for feedback on:</p>
+<p>As of the <strong>28th June 2025</strong>, QuokkaSim is at version <code>0.2.2</code> and is under <strong>very active</strong> development. JJ is currently looking for feedback on:</p>
 <ul>
 <li><strong>Your experiencing learning QuokkaSim</strong>. Is anything more difficult than it should be? I'd love to hear about it!</li>
 <li><strong>Mapping your use cases to QuokkaSim</strong>. Unsure how your particular use case can be modelled with QuokkaSim? I'd love to hear about it and discuss it with you!</li>
@@ -912,7 +912,38 @@ impl CustomInit for ComponentInit {
     </td>
 </tr>
 </tbody>
-</table>
+</table><div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-5-api-reference"><a class="header" href="#chapter-5-api-reference">Chapter 5: API Reference</a></h1>
+<h2 id="definitions-boilerplate"><a class="header" href="#definitions-boilerplate">Definitions Boilerplate</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::error::Error;
+use quokkasim::{define_model_enums, prelude::*};
+
+define_model_enums! {
+    pub enum ComponentModel {}
+    pub enum ComponentModelAddress {}
+    pub enum ComponentLogger {}
+    pub enum ScheduledEventConfig {}
+}
+
+impl CustomComponentConnection for ComponentModel {
+    fn connect_components(a: &amp;mut Self, b: &amp;mut Self, n: Option&lt;usize&gt;) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+        match (a, b) {
+            (a, b) =&gt; Err(format!("No component connection defined from {} to {} (n={:?})", a, b, n).into()),
+        }
+    }
+}
+
+impl CustomLoggerConnection for ComponentLogger { 
+    type ComponentType = ComponentModel;
+    fn connect_logger(a: &amp;mut Self, b: &amp;mut Self::ComponentType, n: Option&lt;usize&gt;) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+        match (a, b, n) {
+            (a, b, _) =&gt; Err(format!("No logger connection defined from {} to {} (n={:?})", a, b, n).into()),
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">

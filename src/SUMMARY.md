@@ -3,3 +3,4 @@
 - [A Conceptual Overview](./chapter_2.md)
 - [Building Your Simulation Model](./chapter_3.md)
 - [Examples](./examples.md)
+- [API Reference](./api_reference.md)
