@@ -8,8 +8,47 @@ Now that we've understood the core concepts used by QuokkaSim, let's look at how
 
 This chapter will explain the purpose of the specific structs, enums, traits and macros provided by QuokkaSim. Code snippets are also used, but are only for demonstrating individual concepts. Numerous full examples of working simulations can be found in [Chapter 4: Examples](examples.md).
 
-> ⚠️ Arr! This chapter has not yet been updated for QuokkaSim `0.2.1`. Some things like `notif_meta` have been replaced, though things are largely the same. Check back soon for an updated chapter!
+For a video walkthrough of an example simulation, see [QuokkaSim in 18 Minutes | Car Workshop Simulation](https://youtu.be/pyxWDZpzS_c?si=dOU-p8tLJyKbXiMi). Code for this example can be found [here](https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/car_workshop.rs)
 
+---
+
+# 3.1. Initial Setup
+
+A bare-bones QuokkaSim simulation requires a small amount of boilerplate code to define a number of required enums and macros within your simulation file. A minimal version can be found in [API Reference - Definitions Boilerplate](./api_reference.md#definitions-boilerplate).
+
+Alternatively, we recommend looking through the [list of examples](./examples.md), to find a suitable simulation to use as a starting point.
+
+# 3.2. Architecting your Simulation
+
+The decision of how to structure your simulation model in terms of QuokkaSim components (and any addditional custom logic) is key.
+
+**Resources** in QuokkaSim can be categorised as:
+- **Vector** (or **Continuous**) quantities.
+    
+    Examples include
+    - `f64` to describe a continuous quantity (e.g. mass of material, energy in Joules)
+    - `Vector3` to describe a 3-component continuous quantity (e.g. Iron, Silica and Other mass components in iron ore)
+
+- **Discrete** quantities
+    
+    Examples include
+    - ``String`` to uniquely identify customer arriving at a cafe
+    - ``F64Container`` to represent a truck with a unique identifier, maximum capacity, and the ability to hold a `f64` resource
+    - ``Vector3Container`` to represent a delivery van with a maximum capacity and the ability to hold a `Vector3` resource with components describing content types
+
+
+
+A simulation can have any number of distinct Vector and Discrete resources. Using separate resources for different aspects of your model can be beneficial in keeping your simulation clear and maintainable, but there is additional overhead with using separate resources.
+
+Depending on your resource/s, you will require different `ComponentModel` variants. For a full list of pre-defined components see [API Reference - ComponentModel](./api_reference.md#componentmodel), though you are free and able to define custom compoonents in your own projects.
+
+# 3.3. Coding your Simulation
+
+# 3.4. Semi-Custom Components
+
+# 3.5. Fully Custom Components
+
+<!-- 
 ---
 
 ## 3.1. Definitions
@@ -266,4 +305,4 @@ In addition to these enums, a number of special function macros are also defined
 
 ---
 
-After `define_model_enums!` are a number of trait implementations. These trait implementations are how we define the details of what any sort of 'connection' means. Note that the methods implemented in t hese traits have the same name as the function macros defined in `define_model_enums`. This is because each of our functions here are called within the respective function macros if a pre-defined implementation does not exist for the enum variants passed into the function.
+After `define_model_enums!` are a number of trait implementations. These trait implementations are how we define the details of what any sort of 'connection' means. Note that the methods implemented in t hese traits have the same name as the function macros defined in `define_model_enums`. This is because each of our functions here are called within the respective function macros if a pre-defined implementation does not exist for the enum variants passed into the function. -->

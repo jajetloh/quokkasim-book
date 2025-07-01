@@ -186,6 +186,69 @@ impl CustomLoggerConnection for ComponentLogger {
     }
 }
 <span class="boring">}</span></code></pre></pre>
+<h2 id="componentmodel"><a class="header" href="#componentmodel">ComponentModel</a></h2>
+<p><code>ComponentModel</code> is an enum whose variants are the possible Stock and Processes in the simulation. A number of pre-built variants are provided with QuokkaSim, and custom variants can also be added for custom components via the <code>define_model_enums!</code> macro. Variants are named starting with their <strong>Resource</strong>, followed by the type of component for that resource.</p>
+<ul>
+<li>Vector Resources
+<ul>
+<li>Resource = <code>f64</code>
+<ul>
+<li><code>F64Stock( VectorStock&lt;f64&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64Source( VectorSource&lt;f64&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64Sink( VectorSink&lt;f64&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64Process( VectorProcess&lt;f64, f64, f64, f64&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64Combiner[N=1-5]( VectorCombiner&lt;f64, f64, [f64; N], f64, N&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64Splitter[N=1-5]( VectorSplitter&lt;f64, f64, f64, f64, N&gt;, Mailbox&lt;...&gt; )</code></li>
+</ul>
+</li>
+<li>Resource = <code>Vector3</code>
+<ul>
+<li><code>Vector3Stock( VectorStock&lt;Vector3&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3Source( VectorSource&lt;Vector3, Vector3&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3Sink( VectorSink&lt;f64, Vector3, Vector3&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3Process( VectorProcess&lt;f64, Vector3, Vector3, Vector3&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3Combiner( VectorCombiner[N=1-5]&lt;f64, Vector3, [Vector3; N], Vector3, N&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3Splitter( VectorSplitter[N=1-5]&lt;f64, Vector3, Vector3, Vector3, N&gt;, Mailbox&lt;...&gt; )</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Discrete Resources
+<ul>
+<li>Resource = <code>String</code>
+<ul>
+<li><code>StringStock( DiscreteStock&lt;String&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>StringSource( DiscreteSource&lt;String, String, StringItemFactory&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>StringSink( DiscreteSink&lt;(), Option&lt;String&gt;, String&gt; )</code></li>
+<li><code>StringProcess( DiscreteProcess&lt;(), Option&lt;String&gt;, String, String&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>StringParallelProcess( DiscreteProcess&lt;(), Option&lt;String&gt;, String, String&gt;, Mailbox&lt;...&gt; )</code></li>
+</ul>
+</li>
+<li>Resource = <code>F64Container</code>
+<ul>
+<li><code>F64ContainerStock( DiscreteStock&lt;F64Container&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64ContainerSource( DiscreteSource&lt;F64Container, F64Container, StringItemFactory&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64ContainerSink( DiscreteSink&lt;(), Option&lt;F64Container&gt;, F64Container&gt; )</code></li>
+<li><code>F64ContainerProcess( DiscreteProcess&lt;(), Option&lt;F64Container&gt;, F64Container, F64Container&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64ContainerParallelProcess( DiscreteProcess&lt;(), Option&lt;F64Container&gt;, F64Container, F64Container&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64ContainerLoadProcess( ContainerLoadingProcess&lt;F64Container, f64&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64ContainerUnloadProcess( ContainerLoadingProcess&lt;F64Container, f64&gt;, Mailbox&lt;...&gt; )</code></li>
+</ul>
+</li>
+<li>Resource = <code>Vector3Container</code>
+<ul>
+<li><code>Vector3ContainerStock( DiscreteStock&lt;Vector3Container&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3ContainerSource( DiscreteSource&lt;Vector3Container, Vector3Container, StringItemFactory&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3ContainerSink( DiscreteSink&lt;(), Option&lt;Vector3Container&gt;, Vector3Container&gt; )</code></li>
+<li><code>Vector3ContainerProcess( DiscreteProcess&lt;(), Option&lt;Vector3Container&gt;, Vector3Container, Vector3Container&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3ContainerParallelProcess( DiscreteProcess&lt;(), Option&lt;Vector3Container&gt;, Vector3Container, Vector3Container&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3ContainerLoadProcess( ContainerLoadingProcess&lt;F64Container, f64&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3ContainerUnloadProcess( ContainerLoadingProcess&lt;F64Container, f64&gt;, Mailbox&lt;...&gt; )</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 
                     </main>
 

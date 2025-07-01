@@ -594,247 +594,296 @@ We have a stock representing a queue of customers, which is processed by a baris
 <li>Execution and Logging</li>
 </ol>
 <p>This chapter will explain the purpose of the specific structs, enums, traits and macros provided by QuokkaSim. Code snippets are also used, but are only for demonstrating individual concepts. Numerous full examples of working simulations can be found in <a href="examples.html">Chapter 4: Examples</a>.</p>
-<blockquote>
-<p>⚠️ Arr! This chapter has not yet been updated for QuokkaSim <code>0.2.1</code>. Some things like <code>notif_meta</code> have been replaced, though things are largely the same. Check back soon for an updated chapter!</p>
-</blockquote>
+<p>For a video walkthrough of an example simulation, see <a href="https://youtu.be/pyxWDZpzS_c?si=dOU-p8tLJyKbXiMi">QuokkaSim in 18 Minutes | Car Workshop Simulation</a>. Code for this example can be found <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/car_workshop.rs">here</a></p>
 <hr />
-<h2 id="31-definitions"><a class="header" href="#31-definitions">3.1. Definitions</a></h2>
-<h3 id="311-enums"><a class="header" href="#311-enums">3.1.1. Enums</a></h3>
-<p>A set of four enums comprise the core of QuokkaSim, and these are declared within the <strong><code>define_model_enums!</code></strong> macro like this:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>define_model_enums! {
+<h1 id="31-initial-setup"><a class="header" href="#31-initial-setup">3.1. Initial Setup</a></h1>
+<p>A bare-bones QuokkaSim simulation requires a small amount of boilerplate code to define a number of required enums and macros within your simulation file. A minimal version can be found in <a href="./api_reference.html#definitions-boilerplate">API Reference - Definitions Boilerplate</a>.</p>
+<p>Alternatively, we recommend looking through the <a href="./examples.html">list of examples</a>, to find a suitable simulation to use as a starting point.</p>
+<h1 id="32-architecting-your-simulation"><a class="header" href="#32-architecting-your-simulation">3.2. Architecting your Simulation</a></h1>
+<p>The decision of how to structure your simulation model in terms of QuokkaSim components (and any addditional custom logic) is key.</p>
+<p><strong>Resources</strong> in QuokkaSim can be categorised as:</p>
+<ul>
+<li>
+<p><strong>Vector</strong> (or <strong>Continuous</strong>) quantities.</p>
+<p>Examples include</p>
+<ul>
+<li><code>f64</code> to describe a continuous quantity (e.g. mass of material, energy in Joules)</li>
+<li><code>Vector3</code> to describe a 3-component continuous quantity (e.g. Iron, Silica and Other mass components in iron ore)</li>
+</ul>
+</li>
+<li>
+<p><strong>Discrete</strong> quantities</p>
+<p>Examples include</p>
+<ul>
+<li><code>String</code> to uniquely identify customer arriving at a cafe</li>
+<li><code>F64Container</code> to represent a truck with a unique identifier, maximum capacity, and the ability to hold a <code>f64</code> resource</li>
+<li><code>Vector3Container</code> to represent a delivery van with a maximum capacity and the ability to hold a <code>Vector3</code> resource with components describing content types</li>
+</ul>
+</li>
+</ul>
+<p>A simulation can have any number of distinct Vector and Discrete resources. Using separate resources for different aspects of your model can be beneficial in keeping your simulation clear and maintainable, but there is additional overhead with using separate resources.</p>
+<p>Depending on your resource/s, you will require different <code>ComponentModel</code> variants. For a full list of pre-defined components see <a href="./api_reference.html#componentmodel">API Reference - ComponentModel</a>, though you are free and able to define custom compoonents in your own projects.</p>
+<h1 id="33-coding-your-simulation"><a class="header" href="#33-coding-your-simulation">3.3. Coding your Simulation</a></h1>
+<h1 id="34-semi-custom-components"><a class="header" href="#34-semi-custom-components">3.4. Semi-Custom Components</a></h1>
+<h1 id="35-fully-custom-components"><a class="header" href="#35-fully-custom-components">3.5. Fully Custom Components</a></h1>
+<!-- 
+---
+
+## 3.1. Definitions
+
+### 3.1.1. Enums
+
+A set of four enums comprise the core of QuokkaSim, and these are declared within the **`define_model_enums!`** macro like this:
+
+```rust
+define_model_enums! {
     pub enum ComponentModel {}
     pub enum ComponentModelAddress {}
     pub enum ComponentLogger {}
     pub enum ScheduledEvent {}
 }
-<span class="boring">}</span></code></pre></pre>
-<p>Though the enums look empty, <code>define_model_enums!</code> endows each of them with all of QuokkaSim's pre-built components, so in reality ComponentModel acts more like this:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub enum ComponentModel {
-    VectorStockF64(VectorStock&lt;f64&gt;, Mailbox&lt;VectorStock&lt;f64&gt;&gt;),
-    VectorProcessF64(VectorProcess&lt;f64&gt;, Mailbox&lt;VectorProcess&lt;f64&gt;&gt;),
+```
+
+Though the enums look empty, `define_model_enums!` endows each of them with all of QuokkaSim's pre-built components, so in reality ComponentModel acts more like this:
+
+```rust
+pub enum ComponentModel {
+    VectorStockF64(VectorStock<f64>, Mailbox<VectorStock<f64>>),
+    VectorProcessF64(VectorProcess<f64>, Mailbox<VectorProcess<f64>>),
     ...
 }
-<span class="boring">}</span></code></pre></pre>
-<p><strong><code>ComponentModel</code></strong> is an enum containing all elements we wish to take part in the simulation. Specifically, it must contain all concrete stocks and processes we wish to use. By ensuring that all components are contained as variants in <code>ComponentModel</code>, this allows us to later perform much more powerful operations across all components, such as being able to construct a simulation model from a JSON or TOML file.</p>
-<p>Each variant contains both the instance of the component, as well as a <strong><code>Mailbox</code></strong> for the variant. The <code>Mailbox</code> a NeXosim struct, and is the single point which receives all inbound communications to the component.</p>
-<p>If we wish to use our own custom components, we can register them as variants in <code>ComponentModel</code> like this:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>define_model_enums! {
+```
+
+**`ComponentModel`** is an enum containing all elements we wish to take part in the simulation. Specifically, it must contain all concrete stocks and processes we wish to use. By ensuring that all components are contained as variants in `ComponentModel`, this allows us to later perform much more powerful operations across all components, such as being able to construct a simulation model from a JSON or TOML file.
+
+Each variant contains both the instance of the component, as well as a **`Mailbox`** for the variant. The `Mailbox` a NeXosim struct, and is the single point which receives all inbound communications to the component.
+
+If we wish to use our own custom components, we can register them as variants in `ComponentModel` like this:
+
+```rust
+define_model_enums! {
     pub enum ComponentModel {
-        MyNewComponent(MyNewComponentStruct, Mailbox&lt;MyNewComponentStruct&gt;),
+        MyNewComponent(MyNewComponentStruct, Mailbox<MyNewComponentStruct>),
     }
     pub enum ComponentModelAddress {}
     pub enum ComponentLogger {}
     pub enum ScheduledEvent {}
 }
-<span class="boring">}</span></code></pre></pre>
-<p><strong><code>ComponentModelAddress</code></strong> is an enum containing the <strong><code>Address</code></strong> of all our components. An <code>Address</code> is simply a reference to a specific <code>Mailbox</code>. While only a single <code>Mailbox</code> exists per component, we can get the <code>Address</code> from the <code>Mailbox</code> and pass ownership and clone as we please. We will use the <code>Address</code> to make calls to kick-start the model execution and also to schedule fixed events.</p>
-<p>If we wish to use our own custom components, after defining them in <code>ComponentModel</code>, the <code>define_model_enums!</code> macro creates the corresponding variant in <code>ComponentModelAddress</code>, which looks like this. We don't need to manually add them to <code>ComponentModelAddress</code>!</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub enum ComponentModelAddress {
-    VectorStockF64(Address&lt;VectorStock&lt;f64&gt;&gt;),
-    VectorProcessF64(Address&lt;VectorProcess&lt;f64&gt;&gt;),
+```
+
+**`ComponentModelAddress`** is an enum containing the **`Address`** of all our components. An `Address` is simply a reference to a specific `Mailbox`. While only a single `Mailbox` exists per component, we can get the `Address` from the `Mailbox` and pass ownership and clone as we please. We will use the `Address` to make calls to kick-start the model execution and also to schedule fixed events.
+
+If we wish to use our own custom components, after defining them in `ComponentModel`, the `define_model_enums!` macro creates the corresponding variant in `ComponentModelAddress`, which looks like this. We don't need to manually add them to `ComponentModelAddress`!
+
+```rust
+pub enum ComponentModelAddress {
+    VectorStockF64(Address<VectorStock<f64>>),
+    VectorProcessF64(Address<VectorProcess<f64>>),
     ...
-    MyNewComponent(Address&lt;MyNewComponentStruct&gt;),
+    MyNewComponent(Address<MyNewComponentStruct>),
 }
-<span class="boring">}</span></code></pre></pre>
-<p><strong><code>ComponentLogger</code></strong> is an enum containing all unique structs that we wish to be able to collect logs in, and export logs from. QuokkaSim comes pre-built with one type of logger for each standard stock, and each standard process - meaning that all processes (simple processes, splitters, and combiners) for the <code>Vector3</code> resource, share the <code>VectorProcessLoggerVector3</code> logger, and thus can all export logs into a single file if desired.</p>
-<p>Our enums here must contain concrete types (no generic type parameters!), so if we are using our own custom resource, or creating an entirely new <code>Logger</code> struct, we must register them like this:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>define_model_enums! {
+```
+
+**`ComponentLogger`** is an enum containing all unique structs that we wish to be able to collect logs in, and export logs from. QuokkaSim comes pre-built with one type of logger for each standard stock, and each standard process - meaning that all processes (simple processes, splitters, and combiners) for the `Vector3` resource, share the `VectorProcessLoggerVector3` logger, and thus can all export logs into a single file if desired.
+
+Our enums here must contain concrete types (no generic type parameters!), so if we are using our own custom resource, or creating an entirely new `Logger` struct, we must register them like this:
+
+```rust
+define_model_enums! {
     pub enum ComponentModel {
-        MyNewComponent(MyNewComponentStruct, Mailbox&lt;MyNewComponentStruct&gt;),
+        MyNewComponent(MyNewComponentStruct, Mailbox<MyNewComponentStruct>),
     }
     pub enum ComponentModelAddress {}
     pub enum ComponentLogger {
-        MyNewVectorLogger(VectorProcessLogger&lt;MyNewResource&gt;), // e.g. adding a new vector resource
+        MyNewVectorLogger(VectorProcessLogger<MyNewResource>), // e.g. adding a new vector resource
         MyNewCustomLogger(MyNewCustomLoggerStruct),            // e.g. adding a new type of Logger
     }
     pub enum ScheduledEvent {}
 }
-<span class="boring">}</span></code></pre></pre>
-<p>Finally, <strong><code>ScheduledEvent</code></strong> contains all the ways for us to push certain events at select times during the model run, such as a capacity change or a change of distributions. <code>ScheduledEvent</code> looks like this:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub enum ScheduledEvent {
+```
+
+Finally, **`ScheduledEvent`** contains all the ways for us to push certain events at select times during the model run, such as a capacity change or a change of distributions. `ScheduledEvent` looks like this:
+
+```rust
+pub enum ScheduledEvent {
     SetMaxCapacity(f64),
     SetProcessTime(DistributionConfig),
     ...
 }
-<span class="boring">}</span></code></pre></pre>
-<p>Note that the variants of <code>ScheduledEvent</code> aren't tied to a single type of component. This is because we are able to later define for each component, what each of these events means.</p>
+```
+
+Note that the variants of `ScheduledEvent` aren't tied to a single type of component. This is because we are able to later define for each component, what each of these events means.
+
+
 <div class="quiz-placeholder" data-quiz-name="&quot;chapter_3_enum_quiz&quot;" data-quiz-questions="{&quot;questions&quot;:[{&quot;id&quot;:&quot;17e96e10-fa47-4f69-9d65-63e8ece13ba3&quot;,&quot;type&quot;:&quot;MultipleChoice&quot;,&quot;answer&quot;:{&quot;answer&quot;:&quot;ComponentModel&quot;,&quot;answerIndex&quot;:0},&quot;prompt&quot;:{&quot;distractors&quot;:[&quot;ComponentModelAddress&quot;,&quot;ComponentLogger&quot;,&quot;ScheduledEvent&quot;],&quot;prompt&quot;:&quot;Which enum must contain all Processes and Stocks to be used in the model?&quot;}},{&quot;context&quot;:&quot;Components need to be registered in `ComponentModel`, but this automatically creates a corresponding variant in `ComponentModelAddress`. You will also likely want to view logs from the new component, thus a new Logger will also need to be added to `ComponentLogger`.&quot;,&quot;id&quot;:&quot;6428c2ce-e43a-4e10-bfac-e54b4857f57c&quot;,&quot;type&quot;:&quot;MultipleChoice&quot;,&quot;answer&quot;:{&quot;answer&quot;:[&quot;Manually adding a new variant to `ComponentModel`&quot;,&quot;Manually adding a new variant to `ComponentLogger`&quot;],&quot;answerIndex&quot;:0},&quot;prompt&quot;:{&quot;distractors&quot;:[&quot;Manually adding a new variant to `ComponentModelAddress`&quot;],&quot;prompt&quot;:&quot;After creating a struct for a custom component, what else needs to happen in `define_model_enums!` to allow it to be used within QuokkaSim?&quot;}}]}"></div>
-<h3 id="312-macros"><a class="header" href="#312-macros">3.1.2. Macros</a></h3>
-<p>In addition to defining enums, the <code>define_model_enums!</code> macro also defines a number of functions (which are actually macros) that we will use to assemble our model. The fact they are defined within the <code>define_model_enums!</code> call means that they are able to work with any custom components and loggers added, and also mean they do not have to be imported via <code>use</code> like <code>define_model_enums!</code>.</p>
-<p>The four functions defined here are:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>fn connect_components!(
-    comp1: &amp;mut ComponentModel,
-    comp2: &amp;mut ComponentModel,
-    n: Option&lt;usize&gt; = None
+
+### 3.1.2. Macros
+
+In addition to defining enums, the `define_model_enums!` macro also defines a number of functions (which are actually macros) that we will use to assemble our model. The fact they are defined within the `define_model_enums!` call means that they are able to work with any custom components and loggers added, and also mean they do not have to be imported via `use` like `define_model_enums!`.
+
+The four functions defined here are:
+
+```rust
+fn connect_components!(
+    comp1: &mut ComponentModel,
+    comp2: &mut ComponentModel,
+    n: Option<usize> = None
 ) { ... }
 
 fn connect_logger!(
-    logger: &amp;mut ComponentLogger,
-    comp: &amp;mut ComponentModel,
-    n: Option&lt;usize&gt; = None
+    logger: &mut ComponentLogger,
+    comp: &mut ComponentModel,
+    n: Option<usize> = None
 ) { ... }
 
 fn register_component!(
     sim_init: SimInit,
     comp: ComponentModel
-) -&gt; SimInit { ... }
+) -> SimInit { ... }
 
 fn create_scheduled_event!(
-    &amp;mut Scheduler,
+    &mut Scheduler,
     MonotonicTime,
     ScheduledEvent,
     ComponentModelAddres,
-    &amp;mut DistributionFactory
+    &mut DistributionFactory
 ) { ... }
-<span class="boring">}</span></code></pre></pre>
-<p><strong><code>connect_components!(&amp;mut comp1, &amp;mut comp2)</code></strong> defines a directional relationship, with <code>comp1</code> upstream and <code>comp2</code> downstream - meaining in this connection, resources flow from <code>comp1</code> to <code>comp2</code>.</p>
-<p>If <code>comp1</code> is a splitter, this means there are multiple outputs from <code>comp1</code> and we must define which output we wish to connect. <strong><code>connect_components!(&amp;mut comp1, &amp;mut comp2, n)</code></strong> is how we do this, with <code>n</code> being the index of the output from <code>comp1</code>.</p>
-<p>If <code>comp2</code> is a combiner, we have the same problem on the opposite side, where we need to define which input of the combiner we are connecting to. In this case we still use <strong><code>connect_components!(&amp;mut comp1, &amp;mut comp2, n)</code></strong> but <code>n</code> refers to the index of the input for <code>comp2</code>.</p>
-<p><strong><code>connect_logger!(&amp;mut logger, &amp;mut comp)</code></strong> connects a logger to a component. This means that the logger is notified any time the component emits a log from the associated output port. All pre-built QuokkaSim components only have a single output port, though it is possible to create components with multiple ports, with each serving a different purpose.</p>
-<p><strong><code>register_component!(sim_init, comp)</code></strong> is used to add the instantiated component to the simulation model. This call passes ownership of the component to the <code>SimInit</code> instance. Due to some subtleties of the <code>SimInit</code> struct, a call to this macro also takes ownership of <code>SimInit</code>, and thus must also return <code>SimInit</code>. This means usage should always look like this:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>sim_builder = register_component!(sim_builder, process);
-<span class="boring">}</span></code></pre></pre>
-<p><strong><code>create_scheduled_event!</code></strong> creates an event in the global <code>Scheduler</code>, which will be triggered at the provided time (this time must be in the future of the current simulation time).</p>
+```
+
+**`connect_components!(&mut comp1, &mut comp2)`** defines a directional relationship, with `comp1` upstream and `comp2` downstream - meaining in this connection, resources flow from `comp1` to `comp2`.
+
+If `comp1` is a splitter, this means there are multiple outputs from `comp1` and we must define which output we wish to connect. **`connect_components!(&mut comp1, &mut comp2, n)`** is how we do this, with `n` being the index of the output from `comp1`.
+
+If `comp2` is a combiner, we have the same problem on the opposite side, where we need to define which input of the combiner we are connecting to. In this case we still use **`connect_components!(&mut comp1, &mut comp2, n)`** but `n` refers to the index of the input for `comp2`.
+
+**`connect_logger!(&mut logger, &mut comp)`** connects a logger to a component. This means that the logger is notified any time the component emits a log from the associated output port. All pre-built QuokkaSim components only have a single output port, though it is possible to create components with multiple ports, with each serving a different purpose.
+
+**`register_component!(sim_init, comp)`** is used to add the instantiated component to the simulation model. This call passes ownership of the component to the `SimInit` instance. Due to some subtleties of the `SimInit` struct, a call to this macro also takes ownership of `SimInit`, and thus must also return `SimInit`. This means usage should always look like this:
+```rust
+sim_builder = register_component!(sim_builder, process);
+```
+
+**`create_scheduled_event!`** creates an event in the global `Scheduler`, which will be triggered at the provided time (this time must be in the future of the current simulation time).
+
 <div class="quiz-placeholder" data-quiz-name="&quot;chapter_3_macro_quiz&quot;" data-quiz-questions="{&quot;questions&quot;:[{&quot;context&quot;:&quot;The flow of resources is from the first to second argument, meaning either `stock` pushes or `process` pulls. Stocks are passive and processes are active, so `process` pulling resources in is a more accurate description.&quot;,&quot;id&quot;:&quot;fbb641a5-72de-4574-b816-33a0c706b728&quot;,&quot;type&quot;:&quot;MultipleChoice&quot;,&quot;answer&quot;:{&quot;answer&quot;:&quot;Allow `process` to pull resources from `stock`&quot;},&quot;prompt&quot;:{&quot;distractors&quot;:[&quot;Allow `stock` to pull resources from `process`&quot;,&quot;Allow `stock` to push resources into `process`&quot;,&quot;Allow `process` to push resources into `stock`&quot;],&quot;prompt&quot;:&quot;What does this code do?\n```rust\nconnect_components!(&amp;mut stock, &amp;mut process);\n```\n&quot;}},{&quot;context&quot;:&quot;`connect_logger!` takes a mutable reference to both `logger` and `process` to set up the connection, instead of taking ownership.&quot;,&quot;id&quot;:&quot;79e110b9-7538-42dc-9ff1-47416ea4f050&quot;,&quot;type&quot;:&quot;MultipleChoice&quot;,&quot;answer&quot;:{&quot;answer&quot;:&quot;`connect_logger!(&amp;mut logger, &amp;mut process)`&quot;},&quot;prompt&quot;:{&quot;distractors&quot;:[&quot;`connect_logger!(logger, process);`&quot;,&quot;`connect_logger!(logger, &amp;mut process);`&quot;],&quot;prompt&quot;:&quot;Which is a valid call to `connect_logger`?&quot;}}]}"></div>
-<h2 id="32-model-assembly"><a class="header" href="#32-model-assembly">3.2. Model Assembly</a></h2>
-<h2 id="33-choose-your-data-structures"><a class="header" href="#33-choose-your-data-structures">3.3. Choose Your Data Structures</a></h2>
-<p>QuokkaSim supports the following Resource types out-of-the-box:</p>
-<ul>
-<li>
-<p><strong>Vectors (f64)</strong></p>
-<ul>
-<li>Use when your quantity of interest is a single number that can take a continuous range of values.</li>
-<li>e.g. For modelling power consumption, your <code>f64</code> can represent Energy in Joules</li>
-<li>e.g. For modelling material flow, your <code>f64</code> can represent payload mass in kg</li>
-<li><code>VectorProcess&lt;f64&gt;</code>, <code>VectorStock&lt;f64&gt;</code> and other similar components can be used out-of-the-box</li>
-</ul>
-</li>
-<li>
-<p><strong>Vectors (Vector3)</strong></p>
-<ul>
-<li>Use when your quantity of interest has up to three independent components of interest</li>
-<li>e.g. For modelling nutrient consumption in crops, your <code>Vector3</code> can represent masses of Nitrogen, Phsophorous and Potassium elements</li>
-<li>e.g. For modelling an iron ore mine, your <code>Vector3</code> can represent Iron, Silica and other elements by mass</li>
-<li><code>VectorProcess&lt;Vector3&gt;</code>, <code>VectorStock&lt;Vector3&gt;</code> and other similar components can be used out-of-the-box</li>
-</ul>
-</li>
-<li>
-<p><strong>Sequences (String)</strong></p>
-<ul>
-<li>Use when your quantity of interest experiencing queuing or other behaviours dependent on other relative ordering</li>
-<li>e.g. For modelling a queue of vehicles, your <code>String</code> can be a unique identifier for a car</li>
-</ul>
-</li>
-</ul>
-<p>Your simulation can use a combination of these, or you can create your own resources if this suits your use case better (e.g. if you prefer a vector with named entries for readability, instead of referencing components by index).</p>
-<div class="table-wrapper"><table><thead><tr><th></th><th>Vectors (f64)</th><th>Vectors (Vector3)</th><th>Sequences (String)</th></tr></thead><tbody>
-<tr><td>Resource</td><td><code>f64</code></td><td><code>Vector3</code></td><td><code>String</code></td></tr>
-<tr><td>Stock</td><td><code>VectorStock&lt;f64&gt;</code></td><td><code>VectorStock&lt;Vector3&gt;</code></td><td><code>SequenceStock&lt;String&gt;</code></td></tr>
-<tr><td>Process (1-in, 1-out)</td><td><code>VectorProcess&lt;f64, f64, f64&gt;</code></td><td><code>VectorProcess&lt;Vector3, Vector3, f64&gt;</code></td><td><code>SequenceProcess&lt;Option&lt;String&gt;&gt;</code></td></tr>
-<tr><td>Process (N-in, 1-out)</td><td><code>VectorCombiner&lt;f64, f64, f64, const M: usize&gt;</code></td><td><code>VectorCombiner&lt;Vector3, Vector3, f64, const M: usize&gt;</code></td><td>TBC</td></tr>
-<tr><td>Process (1-in, N-out)</td><td><code>VectorSplitter&lt;f64, f64, f64, const N: usize&gt;</code></td><td><code>VectorSplitter&lt;Vector3, Vector3, f64, const N: usize&gt;</code></td><td>TBC</td></tr>
-<tr><td>Process (0-in, 1-out)</td><td><code>VectorSource&lt;...&gt;</code></td><td><code>VectorSource&lt;...&gt;</code></td><td>TBC</td></tr>
-<tr><td>Process (1-in, 0-out)</td><td><code>VectorSink&lt;...&gt;</code></td><td><code>VectorSink&lt;...&gt;</code></td><td>TBC</td></tr>
-<tr><td>Example use case</td><td>Water tanks</td><td>Ore movements (using a vector to track elemental composition)</td><td>Customers at a Cafe</td></tr>
-</tbody></table>
-</div>
-<p><strong>Why so many generic type parameters?</strong></p>
-<p>The pre-defined generic structs <code>VectorProcess</code>, <code>SequenceStock</code> etc. can be used for any resource your simulation requires - as long as your resource satisfies all trait requirements. These requirements are checked at compiled time by the compiler, so if your code compiles, there's a good chance it will work.</p>
-<p>Specifically, for <code>VectorProcess&lt;T, U, V&gt;</code>:</p>
-<ul>
-<li><code>T</code> is your resource type</li>
-<li><code>U</code> is the parameter type that is sent by the process to any downstream components, and</li>
-<li><code>V</code> is the parameter type that is sent to upstream components to request material</li>
-</ul>
-<p>Thus <code>VectorProcess&lt;Vector3, Vector3, f64&gt;</code> is a 1-in, 1-out process which handles a <code>T=Vector3</code>, and is passed downstream as a <code>U=Vector3</code>. However, when requesting the upstream Stock for material, this process sends a <code>V=f64</code> corresponding to the total quantity of desired material, and the stock responds with a <code>T=Vector3</code>.</p>
-<h2 id="34-the-core-enums"><a class="header" href="#34-the-core-enums">3.4. The Core Enums</a></h2>
-<p>At the beginning of all the example simulations is a section that looks like this:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>define_model_enums! {
+
+## 3.2. Model Assembly
+
+## 3.3. Choose Your Data Structures
+
+QuokkaSim supports the following Resource types out-of-the-box:
+
+- **Vectors (f64)**
+  - Use when your quantity of interest is a single number that can take a continuous range of values.
+  - e.g. For modelling power consumption, your `f64` can represent Energy in Joules
+  - e.g. For modelling material flow, your `f64` can represent payload mass in kg
+  - `VectorProcess<f64>`, `VectorStock<f64>` and other similar components can be used out-of-the-box
+
+- **Vectors (Vector3)**
+  - Use when your quantity of interest has up to three independent components of interest
+  - e.g. For modelling nutrient consumption in crops, your `Vector3` can represent masses of Nitrogen, Phsophorous and Potassium elements
+  - e.g. For modelling an iron ore mine, your `Vector3` can represent Iron, Silica and other elements by mass
+  - `VectorProcess<Vector3>`, `VectorStock<Vector3>` and other similar components can be used out-of-the-box
+
+- **Sequences (String)**
+  - Use when your quantity of interest experiencing queuing or other behaviours dependent on other relative ordering
+  - e.g. For modelling a queue of vehicles, your `String` can be a unique identifier for a car
+
+Your simulation can use a combination of these, or you can create your own resources if this suits your use case better (e.g. if you prefer a vector with named entries for readability, instead of referencing components by index).
+
+|| Vectors (f64) | Vectors (Vector3) | Sequences (String) |
+|-|-|-|-|
+|Resource|`f64`|`Vector3`|`String`|
+|Stock|`VectorStock<f64>`|`VectorStock<Vector3>`|`SequenceStock<String>`|
+|Process (1-in, 1-out)|`VectorProcess<f64, f64, f64>`|`VectorProcess<Vector3, Vector3, f64>`|`SequenceProcess<Option<String>>`|
+|Process (N-in, 1-out)|`VectorCombiner<f64, f64, f64, const M: usize>` | `VectorCombiner<Vector3, Vector3, f64, const M: usize>`| TBC |
+|Process (1-in, N-out)|`VectorSplitter<f64, f64, f64, const N: usize>`|`VectorSplitter<Vector3, Vector3, f64, const N: usize>`| TBC |
+|Process (0-in, 1-out)|`VectorSource<...>`|`VectorSource<...>`|TBC|
+|Process (1-in, 0-out)|`VectorSink<...>`|`VectorSink<...>`|TBC|
+|Example use case|Water tanks|Ore movements (using a vector to track elemental composition)|Customers at a Cafe|
+
+**Why so many generic type parameters?**
+
+The pre-defined generic structs `VectorProcess`, `SequenceStock` etc. can be used for any resource your simulation requires - as long as your resource satisfies all trait requirements. These requirements are checked at compiled time by the compiler, so if your code compiles, there's a good chance it will work.
+
+Specifically, for `VectorProcess<T, U, V>`:
+- `T` is your resource type
+- `U` is the parameter type that is sent by the process to any downstream components, and
+- `V` is the parameter type that is sent to upstream components to request material
+
+Thus `VectorProcess<Vector3, Vector3, f64>` is a 1-in, 1-out process which handles a `T=Vector3`, and is passed downstream as a `U=Vector3`. However, when requesting the upstream Stock for material, this process sends a `V=f64` corresponding to the total quantity of desired material, and the stock responds with a `T=Vector3`.
+
+## 3.4. The Core Enums
+
+At the beginning of all the example simulations is a section that looks like this:
+
+```rust
+define_model_enums! {
     pub enum ComponentModel {}
     pub enum ComponentLogger {}
     pub enum ComponentInit {}
 }
 
 impl CustomComponentConnection for ComponentModel {
-    fn connect_components(a: &amp;mut Self, b: &amp;mut Self, n: Option&lt;usize&gt;) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+    fn connect_components(a: &mut Self, b: &mut Self, n: Option<usize>) -> Result<(), Box<dyn Error>> {
         match (a, b) {
-            (a, b) =&gt; Err(format!("No component connection defined from {} to {} (n={:?})", a, b, n).into()),
+            (a, b) => Err(format!("No component connection defined from {} to {} (n={:?})", a, b, n).into()),
         }
     }
 }
 
 impl CustomLoggerConnection for ComponentLogger { 
     type ComponentType = ComponentModel;
-    fn connect_logger(a: &amp;mut Self, b: &amp;mut Self::ComponentType, n: Option&lt;usize&gt;) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+    fn connect_logger(a: &mut Self, b: &mut Self::ComponentType, n: Option<usize>) -> Result<(), Box<dyn Error>> {
         match (a, b, n) {
-            (a, b, _) =&gt; Err(format!("No logger connection defined from {} to {} (n={:?})", a, b, n).into()),
+            (a, b, _) => Err(format!("No logger connection defined from {} to {} (n={:?})", a, b, n).into()),
         }
     }
 }
 
 impl CustomInit for ComponentInit {
-    fn initialise(&amp;mut self, simu: &amp;mut Simulation) -&gt; Result&lt;(), ExecutionError&gt; {
+    fn initialise(&mut self, simu: &mut Simulation) -> Result<(), ExecutionError> {
         let notif_meta = NotificationMetadata {
             time: simu.time(),
             element_from: "Init".into(),
             message: "Start".into(),
         };
         match self {
-            _ =&gt; {
+            _ => {
                 Err(ExecutionError::BadQuery)
             }
         }
     }
 }
-<span class="boring">}</span></code></pre></pre>
-<p>Let's break down what's going on here</p>
-<p><code>define_model_enums!</code> is a macro provided by QuokkaSim, which is used to help define a number of key Enums that are required. In our examples for clarity they are all named <code>ComponentModel</code>, <code>ComponentLogger</code> and <code>ComponentInit</code> respectively. You are able to choose your own names for each in the body of the macro call, but note the order that they are specified determines the role that each enum plays.</p>
-<ul>
-<li>
-<p><code>ComponentModel</code> is an Enum whose variants are all possible Stocks and Processes in our model. The <code>define_model_enums!</code> macro populates this enum with all of QuokkaSim's pre-built components (e.g. <code>VectorProcessF64(f64)</code>, <code>SequenceStockString(SequenceStock&lt;String&gt;)</code>).</p>
-<p>If we have our own custom-defined components, we can add them to this enum to register them as a usable component.</p>
-</li>
-<li>
-<p><code>ComponentLogger</code> is an Enum whose variants are all possible objects that are able to collect logs from our components, and export these logs.</p>
-<p>If we have our own custom-defined loggers, we can add them to this enum to register them as a usable logger.</p>
-</li>
-<li>
-<p><code>ComponentInit</code> is an Enum whose variants are all possible ways that objects should be initialised after model creation, but before the first event.</p>
-<p>If we have our own custom initialisations (for our own components, or custom initialisations for existing components), we can add them to this enum to register them as a usable initialisation.</p>
-</li>
-</ul>
-<p>In addition to these enums, a number of special function macros are also defined in <code>define_model_enums</code>.</p>
-<ul>
-<li>
-<p><code>connect_components!</code> is used to define a connection between two components - typically a Stock and Process, or Process to Stock. In the case where a Process has multiple upstream or downstream stocks, an additional parameter is required to determine the specific upstream or downstream stock that is meant.</p>
-</li>
-<li>
-<p><code>connect_logger!</code> is used to define a connection between a component and a logger.</p>
-</li>
-<li>
-<p><code>register_component!</code> is used to add the constructed component to the model execution engine.</p>
-</li>
-</ul>
-<hr />
-<p>After <code>define_model_enums!</code> are a number of trait implementations. These trait implementations are how we define the details of what any sort of 'connection' means. Note that the methods implemented in t hese traits have the same name as the function macros defined in <code>define_model_enums</code>. This is because each of our functions here are called within the respective function macros if a pre-defined implementation does not exist for the enum variants passed into the function.</p>
+```
+
+Let's break down what's going on here
+
+``define_model_enums!`` is a macro provided by QuokkaSim, which is used to help define a number of key Enums that are required. In our examples for clarity they are all named `ComponentModel`, `ComponentLogger` and `ComponentInit` respectively. You are able to choose your own names for each in the body of the macro call, but note the order that they are specified determines the role that each enum plays.
+
+- `ComponentModel` is an Enum whose variants are all possible Stocks and Processes in our model. The `define_model_enums!` macro populates this enum with all of QuokkaSim's pre-built components (e.g. `VectorProcessF64(f64)`, `SequenceStockString(SequenceStock<String>)`).
+
+  If we have our own custom-defined components, we can add them to this enum to register them as a usable component.
+
+- `ComponentLogger` is an Enum whose variants are all possible objects that are able to collect logs from our components, and export these logs.
+
+  If we have our own custom-defined loggers, we can add them to this enum to register them as a usable logger.
+
+- `ComponentInit` is an Enum whose variants are all possible ways that objects should be initialised after model creation, but before the first event.
+
+  If we have our own custom initialisations (for our own components, or custom initialisations for existing components), we can add them to this enum to register them as a usable initialisation.
+
+In addition to these enums, a number of special function macros are also defined in `define_model_enums`.
+
+- `connect_components!` is used to define a connection between two components - typically a Stock and Process, or Process to Stock. In the case where a Process has multiple upstream or downstream stocks, an additional parameter is required to determine the specific upstream or downstream stock that is meant.
+
+- `connect_logger!` is used to define a connection between a component and a logger.
+
+- `register_component!` is used to add the constructed component to the model execution engine.
+
+---
+
+After `define_model_enums!` are a number of trait implementations. These trait implementations are how we define the details of what any sort of 'connection' means. Note that the methods implemented in t hese traits have the same name as the function macros defined in `define_model_enums`. This is because each of our functions here are called within the respective function macros if a pre-defined implementation does not exist for the enum variants passed into the function. -->
 <script type="text/javascript" src="quiz\quiz-embed.iife.js"></script><link rel="stylesheet" type="text/css" href="quiz\style.css"><div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-4-examples"><a class="header" href="#chapter-4-examples">Chapter 4: Examples</a></h1>
 <p>A number of example simulations exist to act as a reference for how to apply the concepts covered in this guide, in practice:</p>
 <table>
@@ -866,6 +915,17 @@ impl CustomInit for ComponentInit {
         <span class="badge">Pre-built components</span>
         <span class="badge">Vector Resource (Vector3)</span>
         <span class="badge">Splitters and Combiners</span>
+    </td>
+</tr>
+<tr>
+    <td>
+        <a href="https://github.com/jajetloh/quokkasim/blob/main/quokkasim_examples/src/bin/car_workshop.rs">car_workshop.rs</a>
+        <p>Model of a Car Workshop using Strings to represent cars, and multiple processes sourcing and depositing into common queues.</p>
+    </td>
+    <td class="badge-container">
+        <span class="badge">Pre-built components</span>
+        <span class="badge">Discrete Resource (String)</span>
+        <span class="badge">Fixed-N Parallel Processes</span>
     </td>
 </tr>
 <tr>
@@ -943,6 +1003,69 @@ impl CustomLoggerConnection for ComponentLogger {
     }
 }
 <span class="boring">}</span></code></pre></pre>
+<h2 id="componentmodel"><a class="header" href="#componentmodel">ComponentModel</a></h2>
+<p><code>ComponentModel</code> is an enum whose variants are the possible Stock and Processes in the simulation. A number of pre-built variants are provided with QuokkaSim, and custom variants can also be added for custom components via the <code>define_model_enums!</code> macro. Variants are named starting with their <strong>Resource</strong>, followed by the type of component for that resource.</p>
+<ul>
+<li>Vector Resources
+<ul>
+<li>Resource = <code>f64</code>
+<ul>
+<li><code>F64Stock( VectorStock&lt;f64&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64Source( VectorSource&lt;f64&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64Sink( VectorSink&lt;f64&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64Process( VectorProcess&lt;f64, f64, f64, f64&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64Combiner[N=1-5]( VectorCombiner&lt;f64, f64, [f64; N], f64, N&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64Splitter[N=1-5]( VectorSplitter&lt;f64, f64, f64, f64, N&gt;, Mailbox&lt;...&gt; )</code></li>
+</ul>
+</li>
+<li>Resource = <code>Vector3</code>
+<ul>
+<li><code>Vector3Stock( VectorStock&lt;Vector3&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3Source( VectorSource&lt;Vector3, Vector3&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3Sink( VectorSink&lt;f64, Vector3, Vector3&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3Process( VectorProcess&lt;f64, Vector3, Vector3, Vector3&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3Combiner( VectorCombiner[N=1-5]&lt;f64, Vector3, [Vector3; N], Vector3, N&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3Splitter( VectorSplitter[N=1-5]&lt;f64, Vector3, Vector3, Vector3, N&gt;, Mailbox&lt;...&gt; )</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Discrete Resources
+<ul>
+<li>Resource = <code>String</code>
+<ul>
+<li><code>StringStock( DiscreteStock&lt;String&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>StringSource( DiscreteSource&lt;String, String, StringItemFactory&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>StringSink( DiscreteSink&lt;(), Option&lt;String&gt;, String&gt; )</code></li>
+<li><code>StringProcess( DiscreteProcess&lt;(), Option&lt;String&gt;, String, String&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>StringParallelProcess( DiscreteProcess&lt;(), Option&lt;String&gt;, String, String&gt;, Mailbox&lt;...&gt; )</code></li>
+</ul>
+</li>
+<li>Resource = <code>F64Container</code>
+<ul>
+<li><code>F64ContainerStock( DiscreteStock&lt;F64Container&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64ContainerSource( DiscreteSource&lt;F64Container, F64Container, StringItemFactory&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64ContainerSink( DiscreteSink&lt;(), Option&lt;F64Container&gt;, F64Container&gt; )</code></li>
+<li><code>F64ContainerProcess( DiscreteProcess&lt;(), Option&lt;F64Container&gt;, F64Container, F64Container&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64ContainerParallelProcess( DiscreteProcess&lt;(), Option&lt;F64Container&gt;, F64Container, F64Container&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64ContainerLoadProcess( ContainerLoadingProcess&lt;F64Container, f64&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>F64ContainerUnloadProcess( ContainerLoadingProcess&lt;F64Container, f64&gt;, Mailbox&lt;...&gt; )</code></li>
+</ul>
+</li>
+<li>Resource = <code>Vector3Container</code>
+<ul>
+<li><code>Vector3ContainerStock( DiscreteStock&lt;Vector3Container&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3ContainerSource( DiscreteSource&lt;Vector3Container, Vector3Container, StringItemFactory&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3ContainerSink( DiscreteSink&lt;(), Option&lt;Vector3Container&gt;, Vector3Container&gt; )</code></li>
+<li><code>Vector3ContainerProcess( DiscreteProcess&lt;(), Option&lt;Vector3Container&gt;, Vector3Container, Vector3Container&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3ContainerParallelProcess( DiscreteProcess&lt;(), Option&lt;Vector3Container&gt;, Vector3Container, Vector3Container&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3ContainerLoadProcess( ContainerLoadingProcess&lt;F64Container, f64&gt;, Mailbox&lt;...&gt; )</code></li>
+<li><code>Vector3ContainerUnloadProcess( ContainerLoadingProcess&lt;F64Container, f64&gt;, Mailbox&lt;...&gt; )</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 
                     </main>
 
