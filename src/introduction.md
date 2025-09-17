@@ -2,10 +2,13 @@
 
 Welcome to the **QuokkaSim Book** – your guide to learning and mastering QuokkaSim, the Rust-based discrete-event simulation framework.
 
-> As of the **28th June 2025**, QuokkaSim is at version `0.2.2` and is under **very active** development. JJ is currently looking for feedback on:
-> - **Your experiencing learning QuokkaSim**. Is anything more difficult than it should be? I'd love to hear about it!
-> - **Mapping your use cases to QuokkaSim**. Unsure how your particular use case can be modelled with QuokkaSim? I'd love to hear about it and discuss it with you!
-> - **Anything in general, really**. QuokkaSim is still in early days - so any and all feedback is appreciated!
+> As of the **18th September 2025**, QuokkaSim is at version `0.2.2`, with development underway for version `0.3.0`. The new version will include a large restructure of the QuokkaSim API and will cause breaking changes. The current estimated release date is **late October 2025**.
+>
+> These changes aim to:
+> - Make it easier to create and integrate custom resources and components
+> - Make compile-time errors more useful by relying more heavily on Rust traits instead of macros
+>
+> Current changes for `0.3.0` can be found on the [refactor/v3](https://github.com/jajetloh/quokkasim/tree/refactor/v3) branch.
 
 ---
 
