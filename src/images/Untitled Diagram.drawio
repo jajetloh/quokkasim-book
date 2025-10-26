@@ -1,0 +1,58 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
+  <diagram name="Page-1" id="ZP4xynoj8zNNjDxie7ht">
+    <mxGraphModel dx="1751" dy="601" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="J1m-tHbpknio5JVbdz1r-1" value="VectorResource" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="260" y="220" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-2" value="Trait" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="-50" y="210" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-3" value="DefaultProcess&amp;lt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;T: VectorResource,&lt;br&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;VectorProcessLog&amp;lt;T&amp;gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;" vertex="1" parent="1">
+          <mxGeometry x="180" y="330" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-6" value="DefaultStock&amp;lt;&lt;div&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;T: VectorResource,&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;U: StockState&lt;br&gt;&lt;/div&gt;&lt;div&gt;&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;" vertex="1" parent="1">
+          <mxGeometry x="440" y="330" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-9" value="Connection" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;" vertex="1" parent="1">
+          <mxGeometry x="660" y="330" width="116" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-10" value="Connect&amp;lt;...&amp;gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="650" y="210" width="114" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-11" value="f64" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;" vertex="1" parent="1">
+          <mxGeometry x="30" y="240" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-12" value="[f64; N]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;" vertex="1" parent="1">
+          <mxGeometry x="30" y="270" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-13" value="Projectable" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="20" y="160" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-14" value="EventId" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;" vertex="1" parent="1">
+          <mxGeometry x="10" y="100" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-15" value="BasicEnvironmentState" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;" vertex="1" parent="1">
+          <mxGeometry x="10" y="130" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-16" value="VectorStockState" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;" vertex="1" parent="1">
+          <mxGeometry x="200" y="150" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-17" value="StockState" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="460" y="220" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-18" value="VectorProcessLog&amp;lt;VectorResource&amp;gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;" vertex="1" parent="1">
+          <mxGeometry x="180" y="430" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-19" value="Log" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="220" y="190" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="J1m-tHbpknio5JVbdz1r-20" value="VectorProcessLogType&amp;lt;VectorResource&amp;gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;" vertex="1" parent="1">
+          <mxGeometry x="180" y="470" width="200" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

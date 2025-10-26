@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>API Reference - The QuokkaSim Book</title>
+        <title>Rust Prerequisites - The QuokkaSim Book</title>
 
 
         <!-- Custom HTML head -->
@@ -155,106 +155,30 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="chapter-5-api-reference"><a class="header" href="#chapter-5-api-reference">Chapter 5: API Reference</a></h1>
-<h2 id="definitions-boilerplate"><a class="header" href="#definitions-boilerplate">Definitions Boilerplate</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::error::Error;
-use quokkasim::{define_model_enums, prelude::*};
-
-define_model_enums! {
-    pub enum ComponentModel {}
-    pub enum ComponentModelAddress {}
-    pub enum ComponentLogger {}
-    pub enum ScheduledEventConfig {}
-}
-
-impl CustomComponentConnection for ComponentModel {
-    fn connect_components(a: &amp;mut Self, b: &amp;mut Self, n: Option&lt;usize&gt;) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
-        match (a, b) {
-            (a, b) =&gt; Err(format!("No component connection defined from {} to {} (n={:?})", a, b, n).into()),
-        }
-    }
-}
-
-impl CustomLoggerConnection for ComponentLogger { 
-    type ComponentType = ComponentModel;
-    fn connect_logger(a: &amp;mut Self, b: &amp;mut Self::ComponentType, n: Option&lt;usize&gt;) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
-        match (a, b, n) {
-            (a, b, _) =&gt; Err(format!("No logger connection defined from {} to {} (n={:?})", a, b, n).into()),
-        }
-    }
-}
-<span class="boring">}</span></code></pre></pre>
-<h2 id="componentmodel"><a class="header" href="#componentmodel">ComponentModel</a></h2>
-<p><code>ComponentModel</code> is an enum whose variants are the possible Stock and Processes in the simulation. A number of pre-built variants are provided with QuokkaSim, and custom variants can also be added for custom components via the <code>define_model_enums!</code> macro. Variants are named starting with their <strong>Resource</strong>, followed by the type of component for that resource.</p>
+                        <h1 id="chapter-2-rust-prerequisites"><a class="header" href="#chapter-2-rust-prerequisites">Chapter 2: Rust Prerequisites</a></h1>
+<p><strong>Basics you'll need to build anything in Rust...</strong></p>
 <ul>
-<li>Vector Resources
+<li>Primitive data types, Structs, Enums, Collections</li>
+<li>Control flow (if/else, match, for, loop etc.)</li>
+</ul>
+<p><strong>You'll want to know how to use (but not necessarily create)...</strong></p>
 <ul>
-<li>Resource = <code>f64</code>
-<ul>
-<li><code>F64Stock( VectorStock&lt;f64&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>F64Source( VectorSource&lt;f64&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>F64Sink( VectorSink&lt;f64&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>F64Process( VectorProcess&lt;f64, f64, f64, f64&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>F64Combiner[N=1-5]( VectorCombiner&lt;f64, f64, [f64; N], f64, N&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>F64Splitter[N=1-5]( VectorSplitter&lt;f64, f64, f64, f64, N&gt;, Mailbox&lt;...&gt; )</code></li>
+<li>Structs/functions with generic type arguments</li>
+<li>Traits, including overriding default methods, and a basic understanding of standard traits e.g. Debug, Clone, Serialise</li>
+<li>Async/await syntax, at a very basic level, and the Send and Sync traits</li>
+<li>The 'static lifetime</li>
 </ul>
-</li>
-<li>Resource = <code>Vector3</code>
-<ul>
-<li><code>Vector3Stock( VectorStock&lt;Vector3&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>Vector3Source( VectorSource&lt;Vector3, Vector3&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>Vector3Sink( VectorSink&lt;f64, Vector3, Vector3&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>Vector3Process( VectorProcess&lt;f64, Vector3, Vector3, Vector3&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>Vector3Combiner( VectorCombiner[N=1-5]&lt;f64, Vector3, [Vector3; N], Vector3, N&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>Vector3Splitter( VectorSplitter[N=1-5]&lt;f64, Vector3, Vector3, Vector3, N&gt;, Mailbox&lt;...&gt; )</code></li>
-</ul>
-</li>
-</ul>
-</li>
-<li>Discrete Resources
-<ul>
-<li>Resource = <code>String</code>
-<ul>
-<li><code>StringStock( DiscreteStock&lt;String&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>StringSource( DiscreteSource&lt;String, String, StringItemFactory&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>StringSink( DiscreteSink&lt;(), Option&lt;String&gt;, String&gt; )</code></li>
-<li><code>StringProcess( DiscreteProcess&lt;(), Option&lt;String&gt;, String, String&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>StringParallelProcess( DiscreteProcess&lt;(), Option&lt;String&gt;, String, String&gt;, Mailbox&lt;...&gt; )</code></li>
-</ul>
-</li>
-<li>Resource = <code>F64Container</code>
-<ul>
-<li><code>F64ContainerStock( DiscreteStock&lt;F64Container&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>F64ContainerSource( DiscreteSource&lt;F64Container, F64Container, StringItemFactory&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>F64ContainerSink( DiscreteSink&lt;(), Option&lt;F64Container&gt;, F64Container&gt; )</code></li>
-<li><code>F64ContainerProcess( DiscreteProcess&lt;(), Option&lt;F64Container&gt;, F64Container, F64Container&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>F64ContainerParallelProcess( DiscreteProcess&lt;(), Option&lt;F64Container&gt;, F64Container, F64Container&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>F64ContainerLoadProcess( ContainerLoadingProcess&lt;F64Container, f64&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>F64ContainerUnloadProcess( ContainerLoadingProcess&lt;F64Container, f64&gt;, Mailbox&lt;...&gt; )</code></li>
-</ul>
-</li>
-<li>Resource = <code>Vector3Container</code>
-<ul>
-<li><code>Vector3ContainerStock( DiscreteStock&lt;Vector3Container&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>Vector3ContainerSource( DiscreteSource&lt;Vector3Container, Vector3Container, StringItemFactory&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>Vector3ContainerSink( DiscreteSink&lt;(), Option&lt;Vector3Container&gt;, Vector3Container&gt; )</code></li>
-<li><code>Vector3ContainerProcess( DiscreteProcess&lt;(), Option&lt;Vector3Container&gt;, Vector3Container, Vector3Container&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>Vector3ContainerParallelProcess( DiscreteProcess&lt;(), Option&lt;Vector3Container&gt;, Vector3Container, Vector3Container&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>Vector3ContainerLoadProcess( ContainerLoadingProcess&lt;F64Container, f64&gt;, Mailbox&lt;...&gt; )</code></li>
-<li><code>Vector3ContainerUnloadProcess( ContainerLoadingProcess&lt;F64Container, f64&gt;, Mailbox&lt;...&gt; )</code></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
+<div class="table-wrapper"><table><thead><tr><th>Documentation and Articles</th><th>Videos</th></tr></thead><tbody>
+<tr><td><a href="https://doc.rust-lang.org/book/">The Rust Book</a></td><td><a href="https://www.youtube.com/watch?v=0rJ94rbdteE">Rust makes you feel like a GENIUS</a> (10:47)</td></tr>
+<tr><td></td><td><a href="https://www.youtube.com/watch?v=br3GIIQeefY">Rust for the impatient</a> (10:42)</td></tr>
+<tr><td></td><td><a href="https://www.youtube.com/watch?v=JLfEiJhpTbE">Rust: Generics, Traits, Lifetimes</a> (35:33)</td></tr>
+</tbody></table>
+</div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="examples.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="chapter_1.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -265,7 +189,7 @@ impl CustomLoggerConnection for ComponentLogger {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="examples.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="chapter_1.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 

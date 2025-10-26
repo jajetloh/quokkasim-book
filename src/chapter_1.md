@@ -34,62 +34,60 @@ This creates a fresh binary crate with ``src/main.rs``.
 To add QuokkaSim as a dependency, use ``cargo add quokkasim`` or add the following to your ``Cargo.toml`` file before running ``cargo fetch``:
 ```toml
 [dependencies]
-quokkasim = "0.1.0"
+quokkasim = "0.3.0-alpha"
 ```
 
 ## 1.4. Write your first Simulation
 
-In your ``main.rs`` file, paste in the following code at the top. This imports the required objects, and also creates our ``ComponentModel`` and ``ComponentLogger`` enums, which we will learn about later.
+In your ``main.rs`` file, paste the following imports which will be used in this example.
 
 ```rust,no_run
-{{#include ../playground/src/bin/source_sink.rs:preamble}}
+{{#include ../playground/src/bin/pallet_cycle.rs:preamble}}
 ```
 
 Next we create the individual interactive components of our simulation
-<p align="center"><img src="images/source_sink_fig.png" alt="Figure 1: Simulation Overview" /><p>
+<p align="center"><img src="images/pallet_cycle_fig.png" alt="Figure 1: Simulation Overview" /><p>
 
-`Stock 1` hold some quantity of material, which `Process` moves at specific times, into `Stock 2`. Add the following into the `main()` function to create these components, and to connect them together.
+**Empty Pallets** hold a discrete number of pallets, which **Empty Pallet Transport** moves at specific times, into **Loaded Pallets**. In reality there may be a specific process to load material onto the pallets, but we will consider this negligible for the sake of example. **Loaded Pallet Transport** then moves pallets to **Empty Pallets** and the cycle continues.
+
+Add the following into the `main()` function to create these components, and to connect them together.
 
 ```rust,no_run
-{{#include ../playground/src/bin/source_sink.rs:components}}
+{{#include ../playground/src/bin/pallet_cycle.rs:components}}
 ```
 
 Next we'll add some ``Logger`` instances to report on what occurs during the simulation, and connect them to our Process and Stock components.
 
 ```rust,no_run
-{{#include ../playground/src/bin/source_sink.rs:loggers}}
+{{#include ../playground/src/bin/pallet_cycle.rs:loggers}}
 ```
 
 Then we create our `Simulation` object `sim`, which controls the progression of the simulation.
 
 ```rust,no_run
-{{#include ../playground/src/bin/source_sink.rs:sim}}
+{{#include ../playground/src/bin/pallet_cycle.rs:sim}}
 ```
 
-We send and initialisation events, tell our simulation to run for an hour, and write the resulting logs to CSV files.
+We send and initialisation events, tell our simulation to run for an hour, and prints the results. Some logic is also included to view the model execution time.
 
 ```rust,no_run
-{{#include ../playground/src/bin/source_sink.rs:run}}
+{{#include ../playground/src/bin/pallet_cycle.rs:run}}
 ```
 
 Our `main.rs` file is now complete (or refer to the Full Code below if you think you're missing something).
 
-Use `cargo run` to run the simulation, and we have our logs in the `outputs/source_sink` directory!
+Finally, use `cargo run` to run the simulation. If you see data logs in the terminal instead of errors, you're done! You can also try a production build and run by using `cargo run --release`, and compare the difference compilation and execution times.
 
 ## 1.5. Exercises
 
 Want to start playing around immediately? Here are some ideas of things you can try before moving on with the rest of the book!
 
-- 5 minutes is simulated to begin with. What if we simulate for longer?
-- The initial simulation begins with signicant stock in `Stock 1`. What happens if it starts empty?
-- What if instead of a sink removing material from the system, we make `Stock 2` bigger and see how long it takes to fill up?
-- What if we add an additional sink that takes directly from `Stock 1`, or an addition source that feeds directly into `Stock 2`?
-- What if there were no source or sink, but instead an additional process from `Stock 2` into `Stock 1`?
-- What if we want to have logs for `Source` and `Sink` save into their own log files?
-
+- 1 hour is simulated to begin with. What if we simulate for longer?
+- What happens if all the pallets begin at **Empty Pallets**?
+- What happens if there can only be up to 2 pallets at a time in **Loaded Pallets**? You can use the `.with_max_capacity` method of the stock to configure this.
 ---
 
 ## Full Code
 ```rust,no_run
-{{#include ../playground/src/bin/source_sink.rs:all}}
+{{#include ../playground/src/bin/pallet_cycle.rs:all}}
 ```
