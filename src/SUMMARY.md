@@ -1,7 +1,11 @@
 [The QuokkaSim Book](./introduction.md)
 - [Getting Started](./chapter_1.md)
 - [Rust Prerequisites](./rust-prerequisites.md)
+- [Conceptual Model](./conceptual_model.md)
+  - [Example: DefaultDiscProcess](./chapter_3/default_disc_process.md)
 <!-- - [A Conceptual Overview](./chapter_2.md)
 - [Building Your Simulation Model](./chapter_3.md)
-- [Examples](./examples.md)
-- [API Reference](./api_reference.md) -->
+- [Examples](./examples.md) -->
+- [Tips and Tricks](./tips_tricks.md)
+- [API Reference](./api_reference.md)
+  - [Continuous](./api/continuous.md)

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Rust Prerequisites - The QuokkaSim Book</title>
+        <title>Conceptual Model - The QuokkaSim Book</title>
 
 
         <!-- Custom HTML head -->
@@ -155,35 +155,44 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="chapter-2-rust-prerequisites"><a class="header" href="#chapter-2-rust-prerequisites">Chapter 2: Rust Prerequisites</a></h1>
-<p><strong>Basics you'll need to build anything in Rust...</strong></p>
+                        <h1 id="chapter-3-the-quokkasim-conceptual-model"><a class="header" href="#chapter-3-the-quokkasim-conceptual-model">Chapter 3: The QuokkaSim Conceptual Model</a></h1>
+<p><strong>Process Event Loop</strong></p>
+<ol>
+<li>Figure out what's changed since the previous update time, and execute those changes</li>
+<li>Figure out what to do next</li>
+<li>Schedule in the event for the next expected event</li>
+</ol>
+<p>For default components provided by QuokkaSim, the above life cycle components are represented by the traits:</p>
+<ol>
+<li>Cont/DiscProcessUpdateSinceLast</li>
+<li>Cont/DiscProcessUpdateDecisionLogic</li>
+<li>Cont/DiscProcessUpdateForNextEvent</li>
+</ol>
+<p><strong>Component Interactions</strong></p>
 <ul>
-<li>Primitive data types, Structs, Enums, Collections</li>
-<li>Control flow (if/else, match, for, loop etc.)</li>
-</ul>
-<p><strong>You'll want to know how to use (but not necessarily create)...</strong></p>
+<li>Processes are active - they can perform actions on themselves, and trigger actions on adjacent entities
 <ul>
-<li>Structs/functions with generic type arguments</li>
-<li>Traits, including overriding default methods, and a basic understanding of standard traits e.g. Debug, Clone, Serialise</li>
-<li>Async/await syntax, at a very basic level, and the Send and Sync traits</li>
-<li>The 'static lifetime</li>
+<li>Processes can view the state of connected (upstream/downstream) stocks</li>
+<li>Processes can push resources into, and withdraw resources out of, adjacent stocks</li>
 </ul>
-<p>Some recommended resources to help with learning these concepts include:</p>
-<div class="table-wrapper"><table><thead><tr><th>Documentation and Articles</th><th>Videos</th></tr></thead><tbody>
-<tr><td><a href="https://doc.rust-lang.org/book/">The Rust Book</a></td><td><a href="https://www.youtube.com/watch?v=0rJ94rbdteE">Rust makes you feel like a GENIUS</a> (10:47)</td></tr>
-<tr><td></td><td><a href="https://www.youtube.com/watch?v=br3GIIQeefY">Rust for the impatient</a> (10:42)</td></tr>
-<tr><td></td><td><a href="https://www.youtube.com/watch?v=JLfEiJhpTbE">Rust: Generics, Traits, Lifetimes</a> (35:33)</td></tr>
-</tbody></table>
-</div>
+</li>
+<li>Stocks are passive - they only perform actions when triggered by other entities
+<ul>
+<li>By default, stocks have one of the following states: Empty, Normal or Full.</li>
+<li>Stocks can notify adjacent processes when they have a meaningful change of state, and trigger <code>update_state</code> in those processes. This is because for example, a process may be unable to begin because its upstream stock is Empty, and currently has event scheduled. If the stock is no longer Empty, the process must be triggered in order to start processing - the Stock::state_emitter performs this role of notifying adjacent processes.</li>
+</ul>
+</li>
+</ul>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="chapter_1.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="rust-prerequisites.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="conceptual_model.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="chapter_3/default_disc_process.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -193,11 +202,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="chapter_1.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="rust-prerequisites.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="conceptual_model.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="chapter_3/default_disc_process.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

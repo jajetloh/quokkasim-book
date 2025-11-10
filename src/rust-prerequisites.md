@@ -10,6 +10,7 @@
 - Async/await syntax, at a very basic level, and the Send and Sync traits
 - The 'static lifetime
 
+Some recommended resources to help with learning these concepts include:
 
 | Documentation and Articles | Videos |
 |------|-----------------|

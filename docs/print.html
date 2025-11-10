@@ -441,12 +441,190 @@ fn main() {
 <li>Async/await syntax, at a very basic level, and the Send and Sync traits</li>
 <li>The 'static lifetime</li>
 </ul>
+<p>Some recommended resources to help with learning these concepts include:</p>
 <div class="table-wrapper"><table><thead><tr><th>Documentation and Articles</th><th>Videos</th></tr></thead><tbody>
 <tr><td><a href="https://doc.rust-lang.org/book/">The Rust Book</a></td><td><a href="https://www.youtube.com/watch?v=0rJ94rbdteE">Rust makes you feel like a GENIUS</a> (10:47)</td></tr>
 <tr><td></td><td><a href="https://www.youtube.com/watch?v=br3GIIQeefY">Rust for the impatient</a> (10:42)</td></tr>
 <tr><td></td><td><a href="https://www.youtube.com/watch?v=JLfEiJhpTbE">Rust: Generics, Traits, Lifetimes</a> (35:33)</td></tr>
 </tbody></table>
-</div>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-3-the-quokkasim-conceptual-model"><a class="header" href="#chapter-3-the-quokkasim-conceptual-model">Chapter 3: The QuokkaSim Conceptual Model</a></h1>
+<p><strong>Process Event Loop</strong></p>
+<ol>
+<li>Figure out what's changed since the previous update time, and execute those changes</li>
+<li>Figure out what to do next</li>
+<li>Schedule in the event for the next expected event</li>
+</ol>
+<p>For default components provided by QuokkaSim, the above life cycle components are represented by the traits:</p>
+<ol>
+<li>Cont/DiscProcessUpdateSinceLast</li>
+<li>Cont/DiscProcessUpdateDecisionLogic</li>
+<li>Cont/DiscProcessUpdateForNextEvent</li>
+</ol>
+<p><strong>Component Interactions</strong></p>
+<ul>
+<li>Processes are active - they can perform actions on themselves, and trigger actions on adjacent entities
+<ul>
+<li>Processes can view the state of connected (upstream/downstream) stocks</li>
+<li>Processes can push resources into, and withdraw resources out of, adjacent stocks</li>
+</ul>
+</li>
+<li>Stocks are passive - they only perform actions when triggered by other entities
+<ul>
+<li>By default, stocks have one of the following states: Empty, Normal or Full.</li>
+<li>Stocks can notify adjacent processes when they have a meaningful change of state, and trigger <code>update_state</code> in those processes. This is because for example, a process may be unable to begin because its upstream stock is Empty, and currently has event scheduled. If the stock is no longer Empty, the process must be triggered in order to start processing - the Stock::state_emitter performs this role of notifying adjacent processes.</li>
+</ul>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="31-example-defaultdiscprocess"><a class="header" href="#31-example-defaultdiscprocess">3.1. Example: DefaultDiscProcess</a></h1>
+<p><code>DefaultDiscProcess</code> is a process that withdraws a discrete resource from an upstream stock, holds on to it for a while, then pushes the resource into a downstream stock.</p>
+<p>As <code>DefaultDiscProcess</code> is a process, it can be polled (from another component, or from its past self) to update its state at some point in time via the <code>DefaultDiscProcess::update_state</code> method. Let's take a look at what this method does.</p>
+<h2 id="311-signature"><a class="header" href="#311-signature">3.1.1. Signature</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct DefaultDiscProcess&lt;
+    ItemType,
+    ProcessLog,
+&gt; where
+    ItemType: Clone + Debug + Serialize + Send + 'static,
+    ProcessLog: Clone + Debug + Serialize + Send + 'static,
+{
+    ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>DefaultDiscProcess&lt;ItemType, ProcessLog&gt;</code> takes two generic type arguments:</p>
+<ul>
+<li><code>ItemType</code> is the type of the discrete resource, that this process deals with. This can be any type that implements <code>Clone</code>, <code>Debug</code>, <code>Serialize</code> and <code>Send</code>, and <code>'static</code> labels <code>ItemType</code> as having the static lifetime, meaning that it is possible for instances of <code>ItemType</code> to exist for the entirety of the program.</li>
+<li><code>ProcessLog</code> is the type of log records that are submitted to the component's built-in log queue. <code>ProcessLog</code> has the same requirements in terms of traits, but a lot of the out-of-the-box functionality is built around using <code>ProcessLog = DiscProcessLog&lt;ItemType&gt;</code></li>
+</ul>
+<p>Some examples:</p>
+<ul>
+<li><code>DefaultDiscProcess&lt;String, DiscProcessLog&lt;String&gt;&gt;</code> receives a number of <code>String</code> resources from an upstream Stock, and sends a number of <code>String</code> resources to a downstream Stock.</li>
+<li><code>DefaultDiscProcess&lt;MyCustomResource, DiscProcessLog&lt;MyCustomResource&gt;&gt;</code> performs the same functionality, but instead sends and receives <code>MyCustomResource</code> instances. This process still report logs of type <code>DiscProcessLog&lt;...&gt;</code>.</li>
+<li><code>DefaultDiscProcess&lt;MyCustomResource, MyCustomProcessLog&gt;</code> uses <code>MyCustomResource</code>, but also logs the custom log type <code>MyCustomProcessLog</code> to the default log queue.</li>
+</ul>
+<h2 id="312-life-cycle"><a class="header" href="#312-life-cycle">3.1.2. Life Cycle</a></h2>
+<pre><code>fn update_state(...) -&gt; impl Future&lt;Output=()&gt; {
+    async move {
+        self.update_state_since_last_update(...).await;
+        self.update_state_decision_logic(...).await;
+        self.update_state_for_next_event(...).await;
+    }
+}
+</code></pre>
+<p><code>update_state</code> can be broken down into three main parts</p>
+<ul>
+<li>
+<p><code>update_state_since_last_update</code> updates the internal state of the process, based on the amount of time since the previous update.</p>
+<p>For example, the process had 60 seconds to completion at the last update, but 50 seconds have passed, then the time to completion is set to 10 seconds.</p>
+<p>However, let's say there are 10 seconds to completion and it has been 10 or more seconds since the last update - the resource being processed is then sent on to the downstream stock before the remaining logic is executed.</p>
+</li>
+<li>
+<p><code>update_state_decision_logic</code> handles decision logic regarding new events.</p>
+<p>In the case of <code>DefaultDiscProcess</code>, if no resource is currently being processed, there is available stock upstream, and there is available room downstream, then the process requests stock from upstream to begin processing. The <code>self.time_to_next_process_event</code> property is set to the processing duration.</p>
+</li>
+<li>
+<p><code>update_state_for_next_event</code> takes the <code>self.time_to_next_process_event</code> property, and if a value is provided (is not <code>None</code>), an event is scheduled at that duration in the future. Note that <code>update_state</code> may be called earlier than this (e.g. if triggered by an adjacent stock changing state).</p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="tips-and-tricks"><a class="header" href="#tips-and-tricks">Tips and Tricks</a></h1>
+<ol>
+<li><strong>Keep It Simple</strong>
+<ul>
+<li>QuokkaSim allows you to very easily refactor from using a <code>f64</code> as a resource, to using a <code>[f64; N]</code> as a resource. However, if your modelling only depends on totals (but not for example, the makeup of that total), it is always easier to stay with a <code>f64</code> resource. Adding complexity always increases the amount of time you'll need to build, fix and run the model - so when adding complexity, this should be for good reason.</li>
+</ul>
+</li>
+<li><strong>Model elements need not map directly to real-life elements</strong>
+<ul>
+<li>In reality there may be processes where no buffer exists between the two, which seems to conflict with QuokkaSim's convention of not connecting processes directly. There's nothing stopping you from implementing such a connection, however in almost all desired use cases, equivalent behaviour can be performed with a 'virtual' stock in between. For example, if Process A feeds C, a virtual Stock B can be placed in between, and Process A may only continue with further inputs once Stock B is empty.</li>
+</ul>
+</li>
+<li><strong>Don't be afraid to create your own Processes</strong>
+<ul>
+<li>QuokkaSim provides some sensible default processes to accelerate the model building progress, but there are many legitimate behaviours a process may want to have. For this reason, QuokkaSim provides seamless support for defining your own structs.</li>
+</ul>
+</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-5-api-reference"><a class="header" href="#chapter-5-api-reference">Chapter 5: API Reference</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="continuous"><a class="header" href="#continuous">Continuous</a></h1>
+<p><strong>Continuous</strong> refers to entities which deal with <strong>resources</strong> that can take continuous values, such as material mass, liquid volume, energy and so on.</p>
+<p><strong>trait ContProcessCore</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait ContProcessCore&lt;
+    ResourceType: ContResource + 'static,
+    LogRecordType: Clone + Send + 'static,
+&gt;: Model
+{
+    fn element_name(&amp;self) -&gt; &amp;str;
+    fn element_code(&amp;self) -&gt; &amp;str;
+    fn element_type(&amp;self) -&gt; &amp;str;
+    fn get_next_event_id(&amp;mut self) -&gt; EventId;
+    fn scheduled_event(&amp;mut self) -&gt; &amp;mut Option&lt;(MonotonicTime, ActionKey)&gt;;
+    fn previous_check_time(&amp;mut self) -&gt; &amp;mut MonotonicTime;
+    fn time_to_next_process_event(&amp;mut self) -&gt; &amp;mut Option&lt;Duration&gt;;
+
+    fn update_state(
+        &amp;mut self,
+        source_event_id: EventId,
+        cx: &amp;mut Context&lt;Self&gt;,
+    ) -&gt; impl Future&lt;Output = ()&gt; + Send;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>trait ContProcessUpdateSinceLast</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait ContProcessUpdateSinceLast&lt;
+    ResourceType: ContResource + 'static,
+    LogRecordType: Clone + Send + 'static,
+&gt;: ContProcessCore&lt;ResourceType, LogRecordType&gt;
+{
+    // Resolves the state of this process from the previous update time to now.
+    // Handles some edge case handling and logging as well.
+    fn update_state_since_last_update(
+        &amp;mut self,
+        source_event_id: &amp;mut EventId,
+        cx: &amp;mut Context&lt;Self&gt;,
+    ) -&gt; impl Future&lt;Output = ()&gt; {
+        async move {
+            ...
+            self.update_process_state_since_prev_event(source_event_id, cx, duration_since_prev).await;
+        }
+    }
+
+    // Concrete function to update the internal process state from the previous time to now
+    fn update_process_state_since_prev_event(
+        &amp;mut self, source_event_id: &amp;mut EventId,
+        cx: &amp;mut Context&lt;Self&gt;,
+        duration_since_prev: Duration
+    ) -&gt; impl Future&lt;Output = ()&gt;;
+
+    fn log_type_process_success(&amp;mut self, source_event_id: &amp;mut EventId, quantity: f64, resource: ResourceType, cx: &amp;mut Context&lt;Self&gt;) -&gt; impl Future&lt;Output = EventId&gt;;
+}
+
+<span class="boring">}</span></code></pre></pre>
+<p><strong>trait ContProcessUpdateDecisionLogic</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait ContProcessUpdateDecisionLogic&lt;
+    ResourceType: ContResource + 'static,
+    LogRecordType: Clone + Send + 'static,  
+&gt;: ContProcessCore&lt;ResourceType, LogRecordType&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>trait ContProcessUpdateForNextEvent</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait ContProcessUpdateForNextEvent&lt;
+    ResourceType: ContResource + 'static,
+    LogRecordType: Clone + Send + 'static,
+&gt;: ContProcessCore&lt;ResourceType, LogRecordType&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>DefaultContProcess</strong></p>
+<pre><code>pub struct DefaultContProcess&lt;
+    ResourceType: Clone + Send + Debug + 'static,
+    ProcessLog: Clone + Send + Debug + 'static,
+&gt; { ... }
+</code></pre>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">

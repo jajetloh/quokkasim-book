@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Rust Prerequisites - The QuokkaSim Book</title>
+        <title>Tips and Tricks - The QuokkaSim Book</title>
 
 
         <!-- Custom HTML head -->
@@ -155,35 +155,34 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="chapter-2-rust-prerequisites"><a class="header" href="#chapter-2-rust-prerequisites">Chapter 2: Rust Prerequisites</a></h1>
-<p><strong>Basics you'll need to build anything in Rust...</strong></p>
+                        <h1 id="tips-and-tricks"><a class="header" href="#tips-and-tricks">Tips and Tricks</a></h1>
+<ol>
+<li><strong>Keep It Simple</strong>
 <ul>
-<li>Primitive data types, Structs, Enums, Collections</li>
-<li>Control flow (if/else, match, for, loop etc.)</li>
+<li>QuokkaSim allows you to very easily refactor from using a <code>f64</code> as a resource, to using a <code>[f64; N]</code> as a resource. However, if your modelling only depends on totals (but not for example, the makeup of that total), it is always easier to stay with a <code>f64</code> resource. Adding complexity always increases the amount of time you'll need to build, fix and run the model - so when adding complexity, this should be for good reason.</li>
 </ul>
-<p><strong>You'll want to know how to use (but not necessarily create)...</strong></p>
+</li>
+<li><strong>Model elements need not map directly to real-life elements</strong>
 <ul>
-<li>Structs/functions with generic type arguments</li>
-<li>Traits, including overriding default methods, and a basic understanding of standard traits e.g. Debug, Clone, Serialise</li>
-<li>Async/await syntax, at a very basic level, and the Send and Sync traits</li>
-<li>The 'static lifetime</li>
+<li>In reality there may be processes where no buffer exists between the two, which seems to conflict with QuokkaSim's convention of not connecting processes directly. There's nothing stopping you from implementing such a connection, however in almost all desired use cases, equivalent behaviour can be performed with a 'virtual' stock in between. For example, if Process A feeds C, a virtual Stock B can be placed in between, and Process A may only continue with further inputs once Stock B is empty.</li>
 </ul>
-<p>Some recommended resources to help with learning these concepts include:</p>
-<div class="table-wrapper"><table><thead><tr><th>Documentation and Articles</th><th>Videos</th></tr></thead><tbody>
-<tr><td><a href="https://doc.rust-lang.org/book/">The Rust Book</a></td><td><a href="https://www.youtube.com/watch?v=0rJ94rbdteE">Rust makes you feel like a GENIUS</a> (10:47)</td></tr>
-<tr><td></td><td><a href="https://www.youtube.com/watch?v=br3GIIQeefY">Rust for the impatient</a> (10:42)</td></tr>
-<tr><td></td><td><a href="https://www.youtube.com/watch?v=JLfEiJhpTbE">Rust: Generics, Traits, Lifetimes</a> (35:33)</td></tr>
-</tbody></table>
-</div>
+</li>
+<li><strong>Don't be afraid to create your own Processes</strong>
+<ul>
+<li>QuokkaSim provides some sensible default processes to accelerate the model building progress, but there are many legitimate behaviours a process may want to have. For this reason, QuokkaSim provides seamless support for defining your own structs.</li>
+</ul>
+</li>
+</ol>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="chapter_1.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="chapter_3/default_disc_process.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="conceptual_model.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="api_reference.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -193,11 +192,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="chapter_1.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="chapter_3/default_disc_process.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="conceptual_model.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="api_reference.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
