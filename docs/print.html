@@ -446,6 +446,7 @@ fn main() {
 <tr><td><a href="https://doc.rust-lang.org/book/">The Rust Book</a></td><td><a href="https://www.youtube.com/watch?v=0rJ94rbdteE">Rust makes you feel like a GENIUS</a> (10:47)</td></tr>
 <tr><td></td><td><a href="https://www.youtube.com/watch?v=br3GIIQeefY">Rust for the impatient</a> (10:42)</td></tr>
 <tr><td></td><td><a href="https://www.youtube.com/watch?v=JLfEiJhpTbE">Rust: Generics, Traits, Lifetimes</a> (35:33)</td></tr>
+<tr><td></td><td><a href="https://www.youtube.com/watch?v=K8LNPYNvT-U">Intro to async/.await in Rust</a> (13:56)</td></tr>
 </tbody></table>
 </div><div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-3-the-quokkasim-conceptual-model"><a class="header" href="#chapter-3-the-quokkasim-conceptual-model">Chapter 3: The QuokkaSim Conceptual Model</a></h1>
 <p><strong>Process Event Loop</strong></p>
@@ -475,7 +476,10 @@ fn main() {
 </ul>
 </li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="31-example-defaultdiscprocess"><a class="header" href="#31-example-defaultdiscprocess">3.1. Example: DefaultDiscProcess</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="31-anatomy-of-a-process-defaultdiscprocess"><a class="header" href="#31-anatomy-of-a-process-defaultdiscprocess">3.1. Anatomy of a Process: <code>DefaultDiscProcess</code></a></h1>
+<p>Although QuokkaSim components can be used straightaway with minimal configuration, many uses cases will require small adjustments to default logic. More specialised use cases may need entirely custom code that is able to interface with other QuokkaSim components. For any degree of customisation, an understanding of how a Process works under-the-hood is require</p>
+<p>Once you understand the inner workings, you can play with and break them as needed.</p>
+<hr />
 <p><code>DefaultDiscProcess</code> is a process that withdraws a discrete resource from an upstream stock, holds on to it for a while, then pushes the resource into a downstream stock.</p>
 <p>As <code>DefaultDiscProcess</code> is a process, it can be polled (from another component, or from its past self) to update its state at some point in time via the <code>DefaultDiscProcess::update_state</code> method. Let's take a look at what this method does.</p>
 <h2 id="311-signature"><a class="header" href="#311-signature">3.1.1. Signature</a></h2>
@@ -488,7 +492,11 @@ fn main() {
     ItemType: Clone + Debug + Serialize + Send + 'static,
     ProcessLog: Clone + Debug + Serialize + Send + 'static,
 {
-    ...
+    fn update_state(
+        &amp;mut self,
+        source_event_id: EventId,
+        cx: &amp;mut Context&lt;Self&gt;,
+    ) -&gt; impl Future&lt;Output = ()&gt; { ... }
 }
 <span class="boring">}</span></code></pre></pre>
 <p><code>DefaultDiscProcess&lt;ItemType, ProcessLog&gt;</code> takes two generic type arguments:</p>
@@ -503,20 +511,50 @@ fn main() {
 <li><code>DefaultDiscProcess&lt;MyCustomResource, MyCustomProcessLog&gt;</code> uses <code>MyCustomResource</code>, but also logs the custom log type <code>MyCustomProcessLog</code> to the default log queue.</li>
 </ul>
 <h2 id="312-life-cycle"><a class="header" href="#312-life-cycle">3.1.2. Life Cycle</a></h2>
-<pre><code>fn update_state(...) -&gt; impl Future&lt;Output=()&gt; {
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn update_state(
+    &amp;mut self,
+    source_event_id: EventId,
+    cx: &amp;mut Context&lt;Self&gt;,
+) -&gt; impl Future&lt;Output=()&gt; {
     async move {
         self.update_state_since_last_update(...).await;
         self.update_state_decision_logic(...).await;
         self.update_state_for_next_event(...).await;
     }
 }
-</code></pre>
+<span class="boring">}</span></code></pre></pre>
 <p><code>update_state</code> can be broken down into three main parts</p>
 <ul>
 <li>
 <p><code>update_state_since_last_update</code> updates the internal state of the process, based on the amount of time since the previous update.</p>
 <p>For example, the process had 60 seconds to completion at the last update, but 50 seconds have passed, then the time to completion is set to 10 seconds.</p>
 <p>However, let's say there are 10 seconds to completion and it has been 10 or more seconds since the last update - the resource being processed is then sent on to the downstream stock before the remaining logic is executed.</p>
+<p>Taking a closer look at the definition of <code>update_state_since_last_update</code>, there is some handling of the some internals like <code>self.scheduled_event()</code>, but there is also a method <code>self.update_process_state_since_prev_event()</code>.</p>
+<pre><pre class="playground"><code class="language-rust editable"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn update_state_since_last_update(
+    &amp;mut self,
+    source_event_id: &amp;mut EventId,
+    cx: &amp;mut Context&lt;Self&gt;,
+) -&gt; impl Future&lt;Output = ()&gt; {
+    async move {
+        if let Some((scheduled_time, _)) = self.scheduled_event() {
+            if *scheduled_time &lt;= cx.time() {
+                *self.scheduled_event() = None;
+            }
+        }
+
+        let duration_since_prev = cx.time().duration_since(*self.previous_check_time());
+
+        self.update_process_state_since_prev_event(source_event_id, cx, duration_since_prev).await;
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<ul>
+<li><code>update_process_state_since_prev_event()</code> contains the particular logic of how to resolve the process state, provided the duration since the last event. This means in most cases where we wish to write our own logic, it suffices to provide our own version of <code>update_process_state_since_prev_event</code>, instead of having to overwrite <code>update_state_since_last_update</code>. We will see how to do this later on.</li>
+</ul>
 </li>
 <li>
 <p><code>update_state_decision_logic</code> handles decision logic regarding new events.</p>
@@ -524,8 +562,26 @@ fn main() {
 </li>
 <li>
 <p><code>update_state_for_next_event</code> takes the <code>self.time_to_next_process_event</code> property, and if a value is provided (is not <code>None</code>), an event is scheduled at that duration in the future. Note that <code>update_state</code> may be called earlier than this (e.g. if triggered by an adjacent stock changing state).</p>
+<p>Even for most custom components, the default implementation of <code>update_state_for_next_event</code> can be used. This method only needs to be overridden in special cases, like if additional logging is required during this step.</p>
 </li>
 </ul>
+<h3 id="313-customising-processes"><a class="header" href="#313-customising-processes">3.1.3. Customising Processes</a></h3>
+<p>Previously we explored what these default functions do:</p>
+<pre><code>update_state(...)
+    update_state_since_last_update(...)
+        update_process_state_since_prev_event(...)
+    update_state_decision_logic(...)
+    update_state_for_next_event(...)
+</code></pre>
+<p>This default functionality is provided to <code>DefaultDiscProcess</code> by implementing certain traits. Each of the functions is provided by a certain trait, and each can be customised by providing a custom implementation of that function, when implementing that trait.</p>
+<div class="table-wrapper"><table><thead><tr><th>Trait</th><th>Function/s</th></tr></thead><tbody>
+<tr><td>DiscProcessCore</td><td>update_state</td></tr>
+<tr><td>DiscProcessUpdateSinceLast</td><td>update_state_since_last_update<br/>update_process_state_since_prev_event</td></tr>
+<tr><td>DiscProcessUpdateDecisionLogic</td><td>update_state_decision_logic</td></tr>
+<tr><td>DiscProcessUpdateForNextEvent</td><td>update_state_for_next_event</td></tr>
+</tbody></table>
+</div>
+<p>In the next chapter, we'll explore how to implement custom logic by providing custom implementations for these methods.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="tips-and-tricks"><a class="header" href="#tips-and-tricks">Tips and Tricks</a></h1>
 <ol>
 <li><strong>Keep It Simple</strong>
