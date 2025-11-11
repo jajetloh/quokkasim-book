@@ -2,7 +2,7 @@
 - [Getting Started](./chapter_1.md)
 - [Rust Prerequisites](./rust-prerequisites.md)
 - [Conceptual Model](./conceptual_model.md)
-  - [Example: DefaultDiscProcess](./chapter_3/default_disc_process.md)
+  - [Anatomy of a Process: DefaultDiscProcess](./chapter_3/default_disc_process.md)
 <!-- - [A Conceptual Overview](./chapter_2.md)
 - [Building Your Simulation Model](./chapter_3.md)
 - [Examples](./examples.md) -->
